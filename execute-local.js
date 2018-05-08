@@ -4,7 +4,10 @@ var body = {
   "AreaId": process.argv[4]
 };
 var event = {
-  "body": JSON.stringify(body)
+  "body": JSON.stringify(body),
+  "pathParameters": {
+    "ParkingID": "10013"
+  }
 };
 
 var context = {
@@ -20,4 +23,5 @@ var callback = function(param1, response){
 };
 
 var myLambda = require('./handler');
-myLambda.ports(event, context, callback);
+myLambda.bikes(event, context, callback);
+//myLambda.ports(event, context, callback);

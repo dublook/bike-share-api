@@ -57,11 +57,11 @@ functions:
     handler: handler.bikes
     events:
       - http:
-          path: ports/{port}/bikes
+          path: ports/{ParkingID}/bikes
           method: post
           request:
             parameters:
-              port: true
+              ParkingID: true
   ports:
     handler: handler.ports
 
