@@ -62,7 +62,7 @@ functions:
     events:
       - http:
           path: ports
-          method: get
+          method: post
 #      - s3: ${env:BUCKET}
 #      - schedule: rate(10 minutes)
 #      - sns: greeter-topic
