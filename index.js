@@ -103,6 +103,7 @@ bikeshareapi.makeSession = function(requestForm) {
     MemberID: bikeshareapi.sessionInfo.MemberID,
     Password: bikeshareapi.sessionInfo.Password
   };
+  console.log('Try to login');
   return bikeshareapi.submitForm(loginForm)
     .then(parseSessionId)
     .then((sessionId) => {
@@ -126,6 +127,7 @@ bikeshareapi.listPorts = function(areaId) {
     AreaEntID: '',
     AreaID: areaId
   };
+  console.log('Try to get port list');
   return bikeshareapi.submitForm(form)
     .then(bikeshareapi.parsePortData);
 };
@@ -182,13 +184,4 @@ bikeshareapi.parsePortData = function(body) {
   return Promise.resolve(portDataList);
 };
 
-(function(memberId, password, areaId) {
-
-  bikeshareapi.sessionInfo.MemberID = memberId;
-  bikeshareapi.sessionInfo.Password = password;
-
-  return bikeshareapi.listPorts(areaId)
-    .then(bikeshareapi.log)
-    .catch(console.error);
-
-})(process.argv[2], process.argv[3], process.argv[4]);
+exports.bikeshareapi = bikeshareapi;
