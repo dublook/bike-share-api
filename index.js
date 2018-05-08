@@ -182,13 +182,4 @@ bikeshareapi.parsePortData = function(body) {
   return Promise.resolve(portDataList);
 };
 
-(function(memberId, password, areaId) {
-
-  bikeshareapi.sessionInfo.MemberID = memberId;
-  bikeshareapi.sessionInfo.Password = password;
-
-  return bikeshareapi.listPorts(areaId)
-    .then(bikeshareapi.log)
-    .catch(console.error);
-
-})(process.argv[2], process.argv[3], process.argv[4]);
+exports.bikeshareapi = bikeshareapi;

@@ -1,7 +1,10 @@
+var body = {
+  "MemberID": process.argv[2],
+  "Password": process.argv[3],
+  "AreaId": process.argv[4]
+};
 var event = {
-  "memberId": "sunaemon",
-  "password": "mypassword",
-  "areaId": "3"
+  "body": JSON.stringify(body)
 };
 
 var context = {
