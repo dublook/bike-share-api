@@ -27,3 +27,21 @@ $ node index.js your_bike_share_member_id your_bike_share_password 1
 #        portNameEn: 'H1-01.Toyosu IHI biru Mae',
 #        availableCount: 3 },
 ```
+
+## Install serverless framework
+```sh
+$ npm install -g serverless
+$ sls -v
+1.27.2
+```
+
+## Init serverless project (You don't have to do this)
+```sh
+$ sls create --template aws-nodejs
+```
+
+## Deploy to aws
+```sh
+$ sls deploy -v
+# You can see endpoint URL in log
+```
