@@ -53,6 +53,15 @@ provider:
 #    - exclude-me-dir/**
 
 functions:
+  bikes:
+    handler: handler.bikes
+    events:
+      - http:
+          path: ports/{port}/bikes
+          method: post
+          request:
+            parameters:
+              port: true
   ports:
     handler: handler.ports
 
