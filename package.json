@@ -1,0 +1,18 @@
+{
+  "name": "bike-share-api",
+  "version": "1.0.0",
+  "description": "- Install nodebrew for controll node.js version [reference](https://qiita.com/sinmetal/items/154e81823f386279b33c) - Use `v6.10.3` that AWS Lambda supports",
+  "main": "index.js",
+  "dependencies": {
+    "iconv-lite": "^0.4.23",
+    "jsdom": "11.10.0",
+    "request": "~2.72.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "keywords": []
+}
