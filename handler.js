@@ -3,6 +3,7 @@
 module.exports.ports = (event, context, callback) => {
   const bikeshareapi = require('./index.js').bikeshareapi;
   var param = JSON.parse(event.body);
+  bikeshareapi.sessionInfo.SessionID = null; // FIXME pararell execution problem
   bikeshareapi.sessionInfo.MemberID = param.MemberID;
   bikeshareapi.sessionInfo.Password = param.Password;
   bikeshareapi.listPorts(param.AreaId)
