@@ -9,6 +9,7 @@ bikeshareapi.CONST = {
   URI: 'https://tcc.docomo-cycle.jp/cycle/TYO/cs_web_main.php',
   UserID: 'TYO',
   AreaEntID: 'TYO',
+  ParkingEntID: 'TYO'
 };
 bikeshareapi.CONST.AREAD_IDS = {
   CHIYODA: '1',
@@ -24,7 +25,7 @@ bikeshareapi.CONST.AREAD_IDS = {
 bikeshareapi.CONST.EVENT_IDS = {
   LOGIN: '21401',
   SHOW_PORTS: '21614',
-  SHOW_PORT: '25701'
+  BIKES: '25701'
 };
 
 bikeshareapi.sessionInfo = {
@@ -182,6 +183,56 @@ bikeshareapi.parsePortData = function(body) {
     return portData;
   });
   return Promise.resolve(portDataList);
+};
+
+bikeshareapi.listBikes = function(parkingId) {
+  const form = {
+    ParkingEntID: bikeshareapi.CONST.ParkingEntID,
+    ParkingID: parkingId,
+    EventNo: bikeshareapi.CONST.EVENT_IDS.BIKES,
+    SessionID: bikeshareapi.sessionInfo.SessionID,
+    MemberID: bikeshareapi.sessionInfo.MemberID,
+    UserID: bikeshareapi.CONST.UserID,
+    GetInfoNum: '20',
+    GetInfoTopNum: '1',
+    ParkingLat: '',
+    ParkingLon: ''
+  };
+  console.log('Try to get bike list for parkingId: ' + parkingId);
+  return bikeshareapi.submitForm(form)
+    .then(bikeshareapi.parseBikesData);
+};
+
+bikeshareapi.parseBikesData = function(body) {
+  // TODO remove duplication
+  const selector = 'div.main_inner_wide_box form[name^="tab_"]';
+  const forms = body.querySelectorAll(selector);
+  console.log(forms.length + ' bikes loaded');
+  const dataList = Array.prototype.map.call(forms, (formElement) => {
+    var data = {};
+    formElement.childNodes.forEach((node) => {
+      if (node.nodeName === 'INPUT') {
+        switch (node.name) {
+          case 'CycleID':
+          case 'CycleID':
+          case 'CycleTypeNo':
+          case 'CycleEntID':
+          case 'CenterLat':
+          case 'CenterLon':
+          case 'CycLat':
+          case 'CycLon':
+          case 'AttachID':
+            data[node.name] = node.value;
+            break;
+        }
+      } else if (node.nodeName === 'DIV') {
+        var anchorInnerHtml = node.querySelector('a').innerHTML;
+        data['CycleName'] = anchorInnerHtml;
+      }
+    });
+    return data;
+  });
+  return Promise.resolve(dataList);
 };
 
 exports.bikeshareapi = bikeshareapi;
