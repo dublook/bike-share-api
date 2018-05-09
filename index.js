@@ -44,7 +44,7 @@ bikeshareapi.ajaxPost = function(form) {
   };
   return new Promise((resolve, reject) => {
     request.post(options, function(error, response, body){
-      if (!error && response.statusCode == 200) {
+      if (!error && response.statusCode === 200) {
         resolve(body);
       } else {
         reject(error);
@@ -75,7 +75,6 @@ bikeshareapi.makeSession = function(requestForm) {
   function parseSessionId(doc) {
     const sessionId = doc.querySelector('input[name="SessionID"]');
     if (sessionId) {
-      console.log('Successfully login');
       return Promise.resolve(sessionId.value);
     } else {
       return Promise.reject('SessionID element is not found');
@@ -107,6 +106,7 @@ bikeshareapi.makeSession = function(requestForm) {
   return bikeshareapi.submitForm(loginForm)
     .then(parseSessionId)
     .then((sessionId) => {
+      console.log('Successfully login');
       bikeshareapi.sessionInfo.SessionID = sessionId;
       requestForm.SessionID = sessionId;
     });
