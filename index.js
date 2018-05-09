@@ -44,7 +44,7 @@ bikeshareapi.ajaxPost = function(form) {
   };
   return new Promise((resolve, reject) => {
     request.post(options, function(error, response, body){
-      if (!error && response.statusCode == 200) {
+      if (!error && response.statusCode === 200) {
         resolve(body);
       } else {
         reject(error);
