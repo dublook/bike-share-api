@@ -28,6 +28,29 @@ $ node execute-local.js your_bike_share_member_id your_bike_share_password 1
 #        availableCount: 3 },
 ```
 
+## Set up awscli
+### Install python3
+See [here](https://qiita.com/7110/items/1aa5968022373e99ae28)
+
+```
+$ brew install python3
+```
+
+### Download access key from IAM console for your AWS account
+`accessKey.csv` will be downloaded
+
+See [AWS document](https://docs.aws.amazon.com/ja_jp/cli/latest/userguide/cli-install-macos.html) for details.
+
+### Install awscli
+```
+$ pip install awscli
+$ aws configure
+# AWS Access Key ID [None]:your_access_key_id
+# AWS Secret Access Key [None]:your_secret_access_key
+# Default region name [None]: ap-northeast-1
+# Default output format [None]:json
+```
+
 ## Install serverless framework
 ```sh
 $ npm install -g serverless
