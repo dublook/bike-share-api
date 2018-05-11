@@ -1,12 +1,8 @@
 'use strict';
 
 module.exports.ports = (event, context, callback) => {
-  const bikeshareapi = require('./index.js').bikeshareapi;
-  var param = JSON.parse(event.body);
-  bikeshareapi.sessionInfo.SessionID = null; // FIXME pararell execution problem
-  bikeshareapi.sessionInfo.MemberID = param.MemberID;
-  bikeshareapi.sessionInfo.Password = param.Password;
-  bikeshareapi.listPorts(param.AreaId)
+  var param = JSON.parse(event.body)
+  provideBikeShareApi(param).listPorts(param.AreaId)
     .then((ports) => {
       const response = {
         statusCode: 200,
@@ -19,7 +15,7 @@ module.exports.ports = (event, context, callback) => {
       callback(null, response);
     })
     .catch((error) => {
-      callback(error, response);
+      callback(error);
     });
 
   // Use this code if you don't use the http event with the LAMBDA-PROXY integration
@@ -27,14 +23,8 @@ module.exports.ports = (event, context, callback) => {
 };
 
 module.exports.bikes = (event, context, callback) => {
-  // TODO remove duplication
-  const bikeshareapi = require('./index.js').bikeshareapi;
-  var param = JSON.parse(event.body);
-  bikeshareapi.sessionInfo.SessionID = null; // FIXME pararell execution problem
-  bikeshareapi.sessionInfo.MemberID = param.MemberID;
-  bikeshareapi.sessionInfo.Password = param.Password;
-  const parkingId = event.pathParameters.ParkingID;
-  bikeshareapi.listBikes(parkingId)
+  const param = JSON.parse(event.body)
+  provideBikeShareApi(param).listBikes(event.pathParameters.ParkingID)
     .then((bikes) => {
       const response = {
         statusCode: 200,
@@ -50,3 +40,9 @@ module.exports.bikes = (event, context, callback) => {
       callback(error);
     });
 };
+
+function provideBikeShareApi(param) {
+  const BikeShareApi = require('./index.js').BikeShareApi;
+  return new BikeShareApi(param.MemberID, param.Password);
+};
+

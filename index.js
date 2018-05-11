@@ -3,15 +3,13 @@ const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 const iconv = require('iconv-lite');
 
-const bikeshareapi = {};
-
-bikeshareapi.CONST = {
+const CONST = {
   URI: 'https://tcc.docomo-cycle.jp/cycle/TYO/cs_web_main.php',
   UserID: 'TYO',
   AreaEntID: 'TYO',
   ParkingEntID: 'TYO'
 };
-bikeshareapi.CONST.AREAD_IDS = {
+CONST.AREAD_IDS = {
   CHIYODA: '1',
   CHUO: '2',
   MINATO: '3',
@@ -22,21 +20,24 @@ bikeshareapi.CONST.AREAD_IDS = {
   SHIBUYA: '8',
   SHINAGAWA: '10',
 };
-bikeshareapi.CONST.EVENT_IDS = {
+CONST.EVENT_IDS = {
   LOGIN: '21401',
   SHOW_PORTS: '21614',
   BIKES: '25701'
 };
 
-bikeshareapi.sessionInfo = {
-  MemberID: null,
-  Password: null,
-  SessionID: null
-};
+/**
+ * @constructor
+ */
+function BikeShareApi(MemberID, Password) {
+  this.MemberID = MemberID;
+  this.Password = Password;
+  this.SessionID = null;
+}
 
-bikeshareapi.ajaxPost = function(form) {
+function ajaxPost(form) {
   var options = {
-    uri: bikeshareapi.CONST.URI,
+    uri: CONST.URI,
     form: form,
     encoding: null, // disable auto encoding by request module
     headers: {
@@ -54,22 +55,22 @@ bikeshareapi.ajaxPost = function(form) {
   });
 };
 
-bikeshareapi.submitForm = function(form, opt_logHtml) {
+BikeShareApi.prototype.submitForm = function(form, opt_logHtml) {
   function convertShiftJisToUtf8(shiftJisText) {
     var buf = new Buffer(shiftJisText, 'binary');
     var utf8Text = iconv.decode(buf, 'Shift_JIS');
     return Promise.resolve(utf8Text);
   }
-  return bikeshareapi.makeSession(form)
-    .then(() => bikeshareapi.ajaxPost(form))
+  return this.makeSession(form)
+    .then(() => ajaxPost(form))
     .then(convertShiftJisToUtf8)
-    .then((html) => opt_logHtml ? bikeshareapi.log(html) : html)
-    .then(bikeshareapi.parseDom)
-    .then(bikeshareapi.checkErrorText);
+    .then((html) => opt_logHtml ? log(html) : html)
+    .then(parseDom)
+    .then(checkErrorText);
 };
 
 
-bikeshareapi.makeSession = function(requestForm) {
+BikeShareApi.prototype.makeSession = function(requestForm) {
   function isBlank(str) {
     return (!str || /^\s*$/.test(str));
   }
@@ -82,7 +83,7 @@ bikeshareapi.makeSession = function(requestForm) {
     }
   };
   function needInterceptAndLogin() {
-    return requestForm.EventNo !== bikeshareapi.CONST.EVENT_IDS.LOGIN
+    return requestForm.EventNo !== CONST.EVENT_IDS.LOGIN
       && requestForm.SessionID == null;
   }
 
@@ -91,34 +92,34 @@ bikeshareapi.makeSession = function(requestForm) {
     return Promise.resolve();
   }
 
-  if (isBlank(bikeshareapi.sessionInfo.MemberID)) {
+  if (isBlank(this.MemberID)) {
     return Promise.reject('MemberID cannot be specified or empty');
-  } else if (isBlank(bikeshareapi.sessionInfo.Password)) {
+  } else if (isBlank(this.Password)) {
     return Promise.reject('Password cannot be specified or empty');
   }
 
   const loginForm = {
-    EventNo: bikeshareapi.CONST.EVENT_IDS.LOGIN,
+    EventNo: CONST.EVENT_IDS.LOGIN,
     // "GarblePrevention": "%82o%82n%82r%82s%83f%81%5B%83%5E",
-    MemberID: bikeshareapi.sessionInfo.MemberID,
-    Password: bikeshareapi.sessionInfo.Password
+    MemberID: this.MemberID,
+    Password: this.Password
   };
   console.log('Try to login');
-  return bikeshareapi.submitForm(loginForm)
+  return this.submitForm(loginForm)
     .then(parseSessionId)
     .then((sessionId) => {
       console.log('Successfully login');
-      bikeshareapi.sessionInfo.SessionID = sessionId;
+      this.SessionID = sessionId;
       requestForm.SessionID = sessionId;
     });
 };
 
-bikeshareapi.listPorts = function(areaId) {
+BikeShareApi.prototype.listPorts = function(areaId) {
   const form = {
-    EventNo: bikeshareapi.CONST.EVENT_IDS.SHOW_PORTS,
-    SessionID: bikeshareapi.sessionInfo.SessionID,
-    MemberID: bikeshareapi.sessionInfo.MemberID,
-    UserID: bikeshareapi.CONST.UserID,
+    EventNo: CONST.EVENT_IDS.SHOW_PORTS,
+    SessionID: this.SessionID,
+    MemberID: this.MemberID,
+    UserID: CONST.UserID,
     GetInfoNum: '120',
     GetInfoTopNum: '1',
     MapType: '1',
@@ -129,16 +130,16 @@ bikeshareapi.listPorts = function(areaId) {
     AreaID: areaId
   };
   console.log('Try to get port list');
-  return bikeshareapi.submitForm(form)
-    .then(bikeshareapi.parsePortData);
+  return this.submitForm(form)
+    .then(parsePortData);
 };
 
-bikeshareapi.log = function(param) {
+function log(param) {
   console.log(param);
   return Promise.resolve(param);
 }
 
-bikeshareapi.parseDom = function(responseBody) {
+function parseDom(responseBody) {
   try {
     const dom = new JSDOM(responseBody);
     return Promise.resolve(dom.window.document);
@@ -147,7 +148,7 @@ bikeshareapi.parseDom = function(responseBody) {
   }
 };
 
-bikeshareapi.checkErrorText = function(doc) {
+function checkErrorText(doc) {
   const errText = doc.querySelector('.err_text');
   if (errText) {
     return Promise.reject(errText.innerHTML);
@@ -156,7 +157,7 @@ bikeshareapi.checkErrorText = function(doc) {
 };
 
 
-bikeshareapi.parsePortData = function(body) {
+function parsePortData(body) {
   const selector = 'div.main_inner_wide_box form[name^="tab_"]';
   const portForms = body.querySelectorAll(selector);
   console.log('portForms.length: ' + portForms.length);
@@ -185,25 +186,29 @@ bikeshareapi.parsePortData = function(body) {
   return Promise.resolve(portDataList);
 };
 
-bikeshareapi.listBikes = function(parkingId) {
+BikeShareApi.prototype.hoge = function() {
+  console.log(this.MemberID);
+}
+
+BikeShareApi.prototype.listBikes = function(parkingId) {
   const form = {
-    ParkingEntID: bikeshareapi.CONST.ParkingEntID,
+    ParkingEntID: CONST.ParkingEntID,
     ParkingID: parkingId,
-    EventNo: bikeshareapi.CONST.EVENT_IDS.BIKES,
-    SessionID: bikeshareapi.sessionInfo.SessionID,
-    MemberID: bikeshareapi.sessionInfo.MemberID,
-    UserID: bikeshareapi.CONST.UserID,
+    EventNo: CONST.EVENT_IDS.BIKES,
+    SessionID: this.SessionID,
+    MemberID: this.MemberID,
+    UserID: CONST.UserID,
     GetInfoNum: '20',
     GetInfoTopNum: '1',
     ParkingLat: '',
     ParkingLon: ''
   };
   console.log('Try to get bike list for parkingId: ' + parkingId);
-  return bikeshareapi.submitForm(form)
-    .then(bikeshareapi.parseBikesData);
+  return this.submitForm(form)
+    .then(parseBikesData);
 };
 
-bikeshareapi.parseBikesData = function(body) {
+function parseBikesData(body) {
   // TODO remove duplication
   const selector = 'div.main_inner_wide_box form[name^="tab_"]';
   const forms = body.querySelectorAll(selector);
@@ -217,8 +222,8 @@ bikeshareapi.parseBikesData = function(body) {
           case 'CycleID':
           case 'CycleTypeNo':
           case 'CycleEntID':
-          case 'CenterLat':
-          case 'CenterLon':
+          // case 'CenterLat':
+          // case 'CenterLon':
           case 'CycLat':
           case 'CycLon':
           case 'AttachID':
@@ -235,4 +240,4 @@ bikeshareapi.parseBikesData = function(body) {
   return Promise.resolve(dataList);
 };
 
-exports.bikeshareapi = bikeshareapi;
+exports.BikeShareApi = BikeShareApi;
