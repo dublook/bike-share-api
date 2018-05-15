@@ -111,6 +111,9 @@ BikeShareApi.prototype.makeSession = function(requestForm) {
       console.log('Successfully login');
       this.SessionID = sessionId;
       requestForm.SessionID = sessionId;
+    })
+    .catch((error) => {
+      console.log('Authentication failed. Check your memberID and password');
     });
 };
 
