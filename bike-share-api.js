@@ -186,10 +186,6 @@ function parsePortData(body) {
   return Promise.resolve(portDataList);
 };
 
-BikeShareApi.prototype.hoge = function() {
-  console.log(this.MemberID);
-}
-
 BikeShareApi.prototype.listBikes = function(parkingId) {
   const form = {
     ParkingEntID: CONST.ParkingEntID,
