@@ -18,7 +18,7 @@ $ npm install
 
 ## Try call api on your local
 ```sh
-$ node execute-local.js your_bike_share_member_id your_bike_share_password 1
+$ node execute-local.js ports your_bike_share_member_id your_bike_share_password 1
 # => [ { ParkingEntID: 'TYO',
 #        ParkingID: '10092',
 #        ParkingLat: '35.658911',
