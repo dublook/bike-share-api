@@ -59,6 +59,25 @@ module.exports.makeReservation = (event, context, callback) => {
     });
 };
 
+module.exports.cancelReservation = (event, context, callback) => {
+  const param = JSON.parse(event.body)
+  provideBikeShareApi(param).cancelReservation()
+    .then((result) => {
+      const response = {
+        statusCode: 200,
+        body: JSON.stringify({
+          result: result
+        }),
+      };
+
+      callback(null, response);
+    })
+    .catch((error) => {
+      // TODO improve error handling
+      callback(error);
+    });
+};
+
 function provideBikeShareApi(param) {
   const BikeShareApi = require('./bike-share-api.js');
   return new BikeShareApi(param.MemberID, param.Password);

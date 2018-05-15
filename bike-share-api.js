@@ -24,7 +24,8 @@ CONST.EVENT_IDS = {
   LOGIN: '21401',
   SHOW_PORTS: '21614',
   BIKES: '25701',
-  MAKE_RESERVATION: '25901'
+  MAKE_RESERVATION: '25901',
+  CANCEL_RESERVATION: '27901'
 };
 
 /**
@@ -266,6 +267,17 @@ BikeShareApi.prototype.makeReservation = function(parkingId) {
     })
     .then(form => this.submitForm(form, true))
     .then(doc => log(doc.innerHTML))
+    .catch(loggerError);
+};
+
+BikeShareApi.prototype.cancelReservation = function() {
+  const form = {
+    EventNo: CONST.EVENT_IDS.CANCEL_RESERVATION,
+    SessionID: this.SessionID,
+    UserID: CONST.UserID,
+    MemberID: this.MemberID
+  };
+  return this.submitForm(form)
     .catch(loggerError);
 };
 
