@@ -265,9 +265,25 @@ BikeShareApi.prototype.makeReservation = function(parkingId) {
         CycleEntID: bike.CycleEntID
       };
     })
-    .then(this.submitForm)
+    .then(form => this.submitForm(form))
+    .then(parseReservationResult)
     .catch(loggerError);
 };
+
+function parseReservationResult(doc) {
+  const messageTitle = doc.querySelector('.tittle_h1').textContent;
+  const mainInner = doc.querySelector('.main_inner_wide');
+  const regxHeadSpaces = /^[ |\n|\t|　]+(.+)[ |\n|\t|　]*$/g;
+  function childNodeText(nodeIndex) {
+    return mainInner.childNodes[nodeIndex].textContent.replace(regxHeadSpaces, '$1');
+  }
+  return Promise.resolve({
+    MessageTitle: messageTitle,
+    MessageInner: childNodeText(2),
+    BikeNo: childNodeText(8),
+    Passcode: childNodeText(15)
+  });
+}
 
 BikeShareApi.prototype.cancelReservation = function() {
   const form = {
