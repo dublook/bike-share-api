@@ -1,13 +1,12 @@
 'use strict';
 
 module.exports.ports = (event, context, callback) => {
-  var param = JSON.parse(event.body)
+  const param = JSON.parse(event.body)
   provideBikeShareApi(param).listPorts(param.AreaId)
     .then((ports) => {
       const response = {
         statusCode: 200,
         body: JSON.stringify({
-          message: 'Go Serverless v1.0! Your function executed successfully!',
           result: ports
         }),
       };
@@ -42,7 +41,7 @@ module.exports.bikes = (event, context, callback) => {
 };
 
 function provideBikeShareApi(param) {
-  const BikeShareApi = require('./index.js').BikeShareApi;
+  const BikeShareApi = require('./bike-share-api.js');
   return new BikeShareApi(param.MemberID, param.Password);
 };
 
