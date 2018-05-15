@@ -23,7 +23,8 @@ CONST.AREAD_IDS = {
 CONST.EVENT_IDS = {
   LOGIN: '21401',
   SHOW_PORTS: '21614',
-  BIKES: '25701'
+  BIKES: '25701',
+  MAKE_RESERVATION: '25901'
 };
 
 /**
@@ -139,6 +140,11 @@ function log(param) {
   return Promise.resolve(param);
 }
 
+function loggerError(param) {
+  console.log(param);
+  return Promise.reject(param);
+}
+
 function parseDom(responseBody) {
   try {
     const dom = new JSDOM(responseBody);
@@ -234,6 +240,33 @@ function parseBikesData(body) {
     return data;
   });
   return Promise.resolve(dataList);
+};
+
+BikeShareApi.prototype.makeReservation = function(parkingId) {
+  return this.listBikes(parkingId)
+    .then(bikes => {
+      if (bikes.length > 0) {
+        const firstBike = bikes[0];
+        return Promise.resolve(firstBike);
+      } else {
+        return Promise.reject('No bikes are available for parkingId = ' + parkingId);
+      }
+    })
+    .then(bike => {
+      return {
+        EventNo: CONST.EVENT_IDS.MAKE_RESERVATION,
+        SessionID: this.SessionID,
+        UserID: CONST.UserID,
+        MemberID: this.MemberID,
+        CycleID: bike.CycleID,
+        AttachID: bike.AttachID,
+        CycleTypeNo: bike.CycleTypeNo,
+        CycleEntID: bike.CycleEntID
+      };
+    })
+    .then(form => this.submitForm(form, true))
+    .then(doc => log(doc.innerHTML))
+    .catch(loggerError);
 };
 
 module.exports = BikeShareApi;
