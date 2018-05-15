@@ -265,8 +265,7 @@ BikeShareApi.prototype.makeReservation = function(parkingId) {
         CycleEntID: bike.CycleEntID
       };
     })
-    .then(form => this.submitForm(form, true))
-    .then(doc => log(doc.innerHTML))
+    .then(this.submitForm)
     .catch(loggerError);
 };
 
