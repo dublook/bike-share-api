@@ -42,7 +42,7 @@ module.exports.bikes = (event, context, callback) => {
 };
 
 function provideBikeShareApi(param) {
-  const BikeShareApi = require('./index.js').BikeShareApi;
+  const BikeShareApi = require('./bike-share-api.js');
   return new BikeShareApi(param.MemberID, param.Password);
 };
 

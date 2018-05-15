@@ -240,4 +240,4 @@ function parseBikesData(body) {
   return Promise.resolve(dataList);
 };
 
-exports.BikeShareApi = BikeShareApi;
+module.exports = BikeShareApi;
