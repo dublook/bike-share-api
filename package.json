@@ -8,9 +8,11 @@
     "jsdom": "11.10.0",
     "request": "~2.72.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "ava": "^0.25.0"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "ava --verbose"
   },
   "author": "",
   "license": "ISC",
