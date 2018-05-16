@@ -1,12 +1,16 @@
+var arg_i = 2;
+const methodName = process.argv[arg_i++];
 var body = {
-  "MemberID": process.argv[2],
-  "Password": process.argv[3],
-  "AreaId": process.argv[4]
+  "MemberID": process.argv[arg_i++],
+  "Password": process.argv[arg_i++],
+  "AreaId": process.argv[arg_i++]
 };
 var event = {
   "body": JSON.stringify(body),
   "pathParameters": {
-    "ParkingID": "10013"
+    //"ParkingID": "10013" // kanda jidoh park
+    //"ParkingID": "10069" // toranomon
+    "ParkingID": "10302" // akihabara yodobashi
   }
 };
 
@@ -23,5 +27,5 @@ var callback = function(param1, response){
 };
 
 var myLambda = require('./handler');
-myLambda.bikes(event, context, callback);
-//myLambda.ports(event, context, callback);
+const func = myLambda[methodName];
+func.call(myLambda, event, context, callback);

@@ -23,7 +23,9 @@ CONST.AREAD_IDS = {
 CONST.EVENT_IDS = {
   LOGIN: '21401',
   SHOW_PORTS: '21614',
-  BIKES: '25701'
+  BIKES: '25701',
+  MAKE_RESERVATION: '25901',
+  CANCEL_RESERVATION: '27901'
 };
 
 /**
@@ -142,6 +144,11 @@ function log(param) {
   return Promise.resolve(param);
 }
 
+function loggerError(param) {
+  console.log(param);
+  return Promise.reject(param);
+}
+
 function parseDom(responseBody) {
   try {
     const dom = new JSDOM(responseBody);
@@ -237,6 +244,59 @@ function parseBikesData(body) {
     return data;
   });
   return Promise.resolve(dataList);
+};
+
+BikeShareApi.prototype.makeReservation = function(parkingId) {
+  return this.listBikes(parkingId)
+    .then(bikes => {
+      if (bikes.length > 0) {
+        const firstBike = bikes[0];
+        return Promise.resolve(firstBike);
+      } else {
+        return Promise.reject('No bikes are available for parkingId = ' + parkingId);
+      }
+    })
+    .then(bike => {
+      return {
+        EventNo: CONST.EVENT_IDS.MAKE_RESERVATION,
+        SessionID: this.SessionID,
+        UserID: CONST.UserID,
+        MemberID: this.MemberID,
+        CycleID: bike.CycleID,
+        AttachID: bike.AttachID,
+        CycleTypeNo: bike.CycleTypeNo,
+        CycleEntID: bike.CycleEntID
+      };
+    })
+    .then(form => this.submitForm(form))
+    .then(parseReservationResult)
+    .catch(loggerError);
+};
+
+function parseReservationResult(doc) {
+  const messageTitle = doc.querySelector('.tittle_h1').textContent;
+  const mainInner = doc.querySelector('.main_inner_wide');
+  const regxHeadSpaces = /^[ |\n|\t|　]+(.+)[ |\n|\t|　]*$/g;
+  function childNodeText(nodeIndex) {
+    return mainInner.childNodes[nodeIndex].textContent.replace(regxHeadSpaces, '$1');
+  }
+  return Promise.resolve({
+    MessageTitle: messageTitle,
+    MessageInner: childNodeText(2),
+    BikeNo: childNodeText(8),
+    Passcode: childNodeText(15)
+  });
+}
+
+BikeShareApi.prototype.cancelReservation = function() {
+  const form = {
+    EventNo: CONST.EVENT_IDS.CANCEL_RESERVATION,
+    SessionID: this.SessionID,
+    UserID: CONST.UserID,
+    MemberID: this.MemberID
+  };
+  return this.submitForm(form)
+    .catch(loggerError);
 };
 
 module.exports = BikeShareApi;

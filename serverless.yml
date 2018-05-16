@@ -62,6 +62,21 @@ functions:
           request:
             parameters:
               ParkingID: true
+  makeReservation:
+    handler: handler.makeReservation
+    events:
+      - http:
+          path: ports/{ParkingID}/first/makeReservation
+          method: post
+          request:
+            parameters:
+              ParkingID: true
+  cancelReservation:
+    handler: handler.cancelReservation
+    events:
+      - http:
+          path: cancelReservation
+          method: post
   ports:
     handler: handler.ports
 
