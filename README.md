@@ -16,6 +16,20 @@ $ cd bike-share-api
 $ npm install
 ```
 
+## How to run unit test
+We chose [AVA](https://github.com/avajs/ava) as test framework.
+
+```sh
+$ node test
+# > ava --verbose
+#
+#
+#  ✔ Test example
+#
+#  1 test passed
+```
+
+
 ## Try call api on your local
 ```sh
 $ node execute-local.js ports your_bike_share_member_id your_bike_share_password 1
