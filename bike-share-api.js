@@ -1,3 +1,5 @@
+'use strict';
+
 const request = require('request');
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
@@ -18,7 +20,7 @@ CONST.AREAD_IDS = {
   BUNKYO: '6',
   OTA: '7',
   SHIBUYA: '8',
-  SHINAGAWA: '10',
+  SHINAGAWA: '10'
 };
 CONST.EVENT_IDS = {
   LOGIN: '21401',
@@ -55,7 +57,7 @@ function ajaxPost(form) {
       }
     });
   });
-};
+}
 
 BikeShareApi.prototype.submitForm = function(form, opt_logHtml) {
   function convertShiftJisToUtf8(shiftJisText) {
@@ -83,14 +85,14 @@ BikeShareApi.prototype.makeSession = function(requestForm) {
     } else {
       return Promise.reject('SessionID element is not found');
     }
-  };
+  }
   function needInterceptAndLogin() {
     return requestForm.EventNo !== CONST.EVENT_IDS.LOGIN
       && requestForm.SessionID == null;
   }
 
   if (!needInterceptAndLogin()) {
-    // arleady login
+    // already login
     return Promise.resolve();
   }
 
@@ -156,7 +158,7 @@ function parseDom(responseBody) {
   } catch (error) {
     return Promise.reject(error);
   }
-};
+}
 
 function checkErrorText(doc) {
   const errText = doc.querySelector('.err_text');
@@ -164,7 +166,7 @@ function checkErrorText(doc) {
     return Promise.reject(errText.innerHTML);
   }
   return Promise.resolve(doc);
-};
+}
 
 
 function parsePortData(body) {
@@ -194,7 +196,7 @@ function parsePortData(body) {
     return portData;
   });
   return Promise.resolve(portDataList);
-};
+}
 
 BikeShareApi.prototype.listBikes = function(parkingId) {
   const form = {
@@ -225,7 +227,6 @@ function parseBikesData(body) {
       if (node.nodeName === 'INPUT') {
         switch (node.name) {
           case 'CycleID':
-          case 'CycleID':
           case 'CycleTypeNo':
           case 'CycleEntID':
           // case 'CenterLat':
@@ -244,7 +245,7 @@ function parseBikesData(body) {
     return data;
   });
   return Promise.resolve(dataList);
-};
+}
 
 BikeShareApi.prototype.makeReservation = function(parkingId) {
   return this.listBikes(parkingId)
@@ -276,7 +277,7 @@ BikeShareApi.prototype.makeReservation = function(parkingId) {
 function parseReservationResult(doc) {
   const messageTitle = doc.querySelector('.tittle_h1').textContent;
   const mainInner = doc.querySelector('.main_inner_wide');
-  const regxHeadSpaces = /^[ |\n|\t|　]+(.+)[ |\n|\t|　]*$/g;
+  const regxHeadSpaces = /^[ |\n\t　]+(.+)[ |\n\t　]*$/g;
   function childNodeText(nodeIndex) {
     return mainInner.childNodes[nodeIndex].textContent.replace(regxHeadSpaces, '$1');
   }
