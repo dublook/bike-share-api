@@ -14,3 +14,10 @@ test('log', async t => {
     const log = BikeShareApi.__get__('log');
     t.is(await log('foo'), 'foo');
 });
+
+test('parseDom', async t => {
+    const parseDom = BikeShareApi.__get__('parseDom');
+    const innerHTML = parseDom('<div id="foo"></div>')
+      .then(doc => doc.getElementById('foo').id);
+    t.is(await innerHTML, 'foo');
+});
