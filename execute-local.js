@@ -28,4 +28,8 @@ var callback = function(param1, response){
 
 var myLambda = require('./handler');
 const func = myLambda[methodName];
-func.call(myLambda, event, context, callback);
+if (!func) {
+  console.log(`ERROR: No function was found with name '${methodName}'`);
+} else {
+  func.call(myLambda, event, context, callback);
+}
