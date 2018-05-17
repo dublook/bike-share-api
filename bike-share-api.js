@@ -118,6 +118,7 @@ BikeShareApi.prototype.makeSession = function(requestForm) {
     })
     .catch((error) => {
       console.log('Authentication failed. Check your memberID and password');
+      return Promise.reject(error);
     });
 };
 
@@ -160,10 +161,15 @@ function parseDom(responseBody) {
   }
 }
 
+function isPasswordNotChangedLongTimeError(textContent) {
+  return textContent && textContent
+      .indexOf('The password has not been changed') > -1;
+}
+
 function checkErrorText(doc) {
   const errText = doc.querySelector('.err_text');
-  if (errText) {
-    return Promise.reject(errText.innerHTML);
+  if (errText && !isPasswordNotChangedLongTimeError(errText.textContent)) {
+    return Promise.reject(errText.textContent);
   }
   return Promise.resolve(doc);
 }
