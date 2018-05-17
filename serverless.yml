@@ -66,7 +66,7 @@ functions:
     handler: handler.makeReservation
     events:
       - http:
-          path: ports/{ParkingID}/first/makeReservation
+          path: ports/{ParkingID}/bikes/first/makeReservation
           method: post
           request:
             parameters:
