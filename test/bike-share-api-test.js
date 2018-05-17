@@ -21,3 +21,12 @@ test('parseDom', async t => {
       .then(doc => doc.getElementById('foo').id);
     t.is(await innerHTML, 'foo');
 });
+
+test('isPasswordNotChangedLongTimeError', t => {
+    t.plan(2);
+    const funcName = 'isPasswordNotChangedLongTimeError';
+    const isPasswordNotChangedLongTimeError = BikeShareApi.__get__(funcName);
+    t.true(isPasswordNotChangedLongTimeError(
+      'Foo / The password has not been changed for a long period of time.'));
+    t.false(isPasswordNotChangedLongTimeError('other text'));
+});

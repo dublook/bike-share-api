@@ -5,7 +5,7 @@ module.exports.ports = (event, context, callback) => {
   provideBikeShareApi(param)
     .listPorts(event.pathParameters.AreaID)
     .then(responseSuccess(callback))
-    .catch(responseError);
+    .catch(responseError(callback));
 };
 
 module.exports.bikes = (event, context, callback) => {
@@ -13,7 +13,7 @@ module.exports.bikes = (event, context, callback) => {
   provideBikeShareApi(param)
     .listBikes(event.pathParameters.ParkingID)
     .then(responseSuccess(callback))
-    .catch(responseError);
+    .catch(responseError(callback));
 };
 
 module.exports.makeReservation = (event, context, callback) => {
@@ -21,14 +21,14 @@ module.exports.makeReservation = (event, context, callback) => {
   provideBikeShareApi(param)
     .makeReservation(event.pathParameters.ParkingID)
     .then(responseSuccess(callback))
-    .catch(responseError);
+    .catch(responseError(callback));
 };
 
 module.exports.cancelReservation = (event, context, callback) => {
   const param = JSON.parse(event.body);
   provideBikeShareApi(param).cancelReservation()
     .then(responseSuccess(callback))
-    .catch(responseError);
+    .catch(responseError(callback));
 };
 
 function provideBikeShareApi(param) {
@@ -49,7 +49,9 @@ function responseSuccess(callback) {
   }
 }
 
-function responseError(error) {
+function responseError(callback) {
   // TODO improve error handling
-  callback(error);
+  return error => {
+    callback(error);
+  }
 }
