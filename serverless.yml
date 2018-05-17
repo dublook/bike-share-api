@@ -66,7 +66,7 @@ functions:
     handler: handler.makeReservation
     events:
       - http:
-          path: ports/{ParkingID}/first/makeReservation
+          path: ports/{ParkingID}/bikes/first/makeReservation
           method: post
           request:
             parameters:
@@ -85,8 +85,11 @@ functions:
 #    Check the event documentation for details
     events:
       - http:
-          path: ports
+          path: areas/{AreaID}/ports
           method: post
+          request:
+            parameters:
+              AreaID: true
 #      - s3: ${env:BUCKET}
 #      - schedule: rate(10 minutes)
 #      - sns: greeter-topic

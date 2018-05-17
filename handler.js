@@ -3,7 +3,7 @@
 module.exports.ports = (event, context, callback) => {
   const param = JSON.parse(event.body);
   provideBikeShareApi(param)
-    .listPorts(param.AreaId)
+    .listPorts(event.pathParameters.AreaID)
     .then(responseSuccess(callback))
     .catch(responseError);
 };

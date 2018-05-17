@@ -85,5 +85,6 @@ $ sls deploy -v
 
 ## Call deployed API
 ```sh
-$ curl -s -d '{"MemberID":"your_bike_share_member_id","Password":"your_bike_share_member_id","AreaId":"4"}' https://your_endpoint.execute-api.ap-northeast-1.amazonaws.com/dev/ports
+$ curl -s -d '{"MemberID":"your_bike_share_member_id","Password":"your_bike_share_member_id"}' \
+  https://your_endpoint.execute-api.ap-northeast-1.amazonaws.com/dev/areas/3/ports
 ```
