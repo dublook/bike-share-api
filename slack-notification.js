@@ -47,9 +47,8 @@ SlackNotification.formatPortToAttachment = port => {
     "fields":[
       {
         title: `${port.PortNameJa}: ${port.AvailableCount}台`,
-        "value":"This is much easier than I thought it would be.",
         value: `ID:${port.ParkingID}`,
-        "short":true
+        "short":false
       }
     ]
   };
