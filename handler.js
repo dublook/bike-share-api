@@ -43,7 +43,7 @@ module.exports.cancelReservation = (event, context, callback) => {
     .then(r => {
       return { Message: '利用予約の取消が完了しました' };
     })
-    .then(sendNotification(param))
+    .then(sendNotification(param, Slack.formatCancelReservation))
     .then(responseSuccess(callback))
     .catch(responseError(callback));
 };

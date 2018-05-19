@@ -23,6 +23,13 @@ SlackNotification.formatSimpleText = function(obj) {
   return Promise.resolve(payload);
 };
 
+SlackNotification.formatCancelReservation = function(res) {
+  const payload = Object.assign({
+    text: res.Message
+  }, PAYLOAD_BASE);
+  return Promise.resolve(payload);
+};
+
 SlackNotification.formatPortToAttachment = port => {
   const color = (availableCount => {
     if (availableCount > 3) {
