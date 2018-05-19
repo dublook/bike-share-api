@@ -27,9 +27,9 @@ var context = {
     functionName: 'test',
     functionVersion: '$LATEST'
 };
-var callback = function(param1, response){
-  var body = JSON.parse(response.body);
-  console.log(body);
+var callback = function(error, response){
+  var res = error ? error : JSON.parse(response.body);
+  console.log(res);
 };
 
 var myLambda = require('./handler');

@@ -272,7 +272,11 @@ BikeShareApi.prototype.makeReservation = function(parkingId) {
         const firstBike = bikes[0];
         return Promise.resolve(firstBike);
       } else {
-        return Promise.reject('No bikes are available for parkingId = ' + parkingId);
+        const error = {
+          ParkingID: parkingId,
+          ErrorType: 'no-bikes-available'
+        };
+        return Promise.reject(error);
       }
     })
     .then(bike => {

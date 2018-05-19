@@ -34,7 +34,8 @@ module.exports.makeReservation = (event, context, callback) => {
     .makeReservation(event.pathParameters.ParkingID)
     .then(sendNotification(param, Slack.formatMakeReservation))
     .then(responseSuccess(callback))
-    .catch(responseError(callback));
+    .catch(sendNotification(param, Slack.formatMakeReservationError,
+      responseError(callback)));
 };
 
 module.exports.cancelReservation = (event, context, callback) => {
@@ -70,14 +71,21 @@ function responseError(callback) {
   // TODO improve error handling
   return error => {
     callback(error);
+    return Promise.resolve(error);
   }
 }
 
-function sendNotification(param, opt_formatter) {
+function sendNotification(param, opt_formatter, opt_resolver) {
   return result => {
-    const resolve = Promise.resolve(result);
+    const resolver = value => {
+      if (opt_resolver) {
+        return Promise.resolve(value).then(opt_resolver);
+      } else {
+        return Promise.resolve(value);
+      }
+    };
     if (!param.slackWebhookUrl) {
-      return resolve;
+      return resolver(result);
     }
     try {
       const formatter = opt_formatter || Slack.formatSimpleText;
@@ -87,16 +95,16 @@ function sendNotification(param, opt_formatter) {
         .then(payload => slack.sendNotification(payload))
         .then(slackRes => {
           console.log(`Slack notification response: ${slackRes}`);
-          return resolve;
+          return resolver(result);
         })
         .catch(error => {
-          console.log(`Failed to send slack notification: ${error}`);
-          return resolve;
+          console.log(`Failed to send slack notification: ${JSON.stringify(error)}`);
+          return resolver(result);
         });
     } catch (error) {
       console.log(`Failed to send slack notification: ${error}`);
     }
 
-    return resolve;
+    return resolver(result);
   }
 }

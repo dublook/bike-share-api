@@ -8,7 +8,8 @@ function SlackNotification(webhookUrl) {
 const COLORS = {
   GREEN300: '#81C784',
   GRAY300: '#E0E0E0',
-  YELLOW300: '#FFF176'
+  YELLOW300: '#FFF176',
+  RED300: '#E57373'
 };
 
 const PAYLOAD_BASE = {
@@ -40,6 +41,35 @@ SlackNotification.formatMakeReservation = function(res) {
           {
             title: `自転車番号: ${res.BikeNo} パスコード: ${res.Passcode}`,
             value: `${res.Message}`,
+            "short":false
+          }
+        ]
+      }
+    ]
+  }, PAYLOAD_BASE);
+  return Promise.resolve(payload);
+};
+
+SlackNotification.formatMakeReservationError = function(error) {
+  var title;
+  switch (error.ErrorType) {
+    case 'no-bikes-available':
+      title = '指定されたポートに利用可能な自転車がありません';
+      break;
+    default:
+      title = error;
+      break;
+  }
+
+  const payload = Object.assign({
+    "text": `利用予約エラー`,
+    "attachments": [
+      {
+        "color": COLORS.RED300,
+        "fields":[
+          {
+            title: title,
+            value: `ParkingID:${error.ParkingID}`,
             "short":false
           }
         ]
