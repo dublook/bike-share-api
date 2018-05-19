@@ -30,6 +30,25 @@ SlackNotification.formatCancelReservation = function(res) {
   return Promise.resolve(payload);
 };
 
+SlackNotification.formatMakeReservation = function(res) {
+  const payload = Object.assign({
+    "text": `${res.Title}`,
+    "attachments": [
+      {
+        "color": COLORS.GREEN300,
+        "fields":[
+          {
+            title: `自転車番号: ${res.BikeNo} パスコード: ${res.Passcode}`,
+            value: `${res.Message}`,
+            "short":false
+          }
+        ]
+      }
+    ]
+  }, PAYLOAD_BASE);
+  return Promise.resolve(payload);
+};
+
 SlackNotification.formatPortToAttachment = port => {
   const color = (availableCount => {
     if (availableCount > 3) {

@@ -32,7 +32,7 @@ module.exports.makeReservation = (event, context, callback) => {
   const param = JSON.parse(event.body);
   provideBikeShareApi(param)
     .makeReservation(event.pathParameters.ParkingID)
-    .then(sendNotification(param))
+    .then(sendNotification(param, Slack.formatMakeReservation))
     .then(responseSuccess(callback))
     .catch(responseError(callback));
 };
