@@ -10,6 +10,15 @@ module.exports.ports = (event, context, callback) => {
     .catch(responseError(callback));
 };
 
+module.exports.portsSpecified = (event, context, callback) => {
+  const param = JSON.parse(event.body);
+  provideBikeShareApi(param)
+    .listSpecifiedPorts(event.pathParameters.AreaID, event.pathParameters.ParkingIds)
+    .then(sendNotification(param))
+    .then(responseSuccess(callback))
+    .catch(responseError(callback));
+};
+
 module.exports.bikes = (event, context, callback) => {
   const param = JSON.parse(event.body);
   provideBikeShareApi(param)

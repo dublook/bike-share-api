@@ -30,3 +30,22 @@ test('isPasswordNotChangedLongTimeError', t => {
       'Foo / The password has not been changed for a long period of time.'));
     t.false(isPasswordNotChangedLongTimeError('other text'));
 });
+
+test('listSpecifiedPorts', async t => {
+  function toPort(i) {
+    return { ParkingID: i.toString() };
+  }
+  const api = new BikeShareApi('Kota', 'myPassword');
+  api.listPorts = areaId => {
+    const ports = [1,2,3,4,5].map(toPort);
+    return Promise.resolve(ports);
+  };
+
+  t.plan(6);
+  t.deepEqual(await api.listSpecifiedPorts(0, '1'), [1].map(toPort));
+  t.deepEqual(await api.listSpecifiedPorts(0, '5'), [5].map(toPort));
+  t.deepEqual(await api.listSpecifiedPorts(0, '3,5,1'), [3,5,1].map(toPort));
+  t.deepEqual(await api.listSpecifiedPorts(0, ''), []);
+  t.deepEqual(await api.listSpecifiedPorts(0, null), []);
+  t.deepEqual(await api.listSpecifiedPorts(0, 'a'), []);
+});

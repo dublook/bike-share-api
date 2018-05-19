@@ -142,6 +142,18 @@ BikeShareApi.prototype.listPorts = function(areaId) {
     .then(parsePortData);
 };
 
+BikeShareApi.prototype.listSpecifiedPorts = function(areaId, parkingIdsQuery) {
+  if (!parkingIdsQuery) {
+    return Promise.resolve([]);
+  }
+  const specifiedParkingIds = parkingIdsQuery.split(',');
+  const indexOf = port => specifiedParkingIds.indexOf(port.ParkingID);
+  const isSpecified = port => indexOf(port) > -1;
+  const BySpecifiedOrder = (p1, p2) =>  indexOf(p1) - indexOf(p2);
+  return this.listPorts(areaId)
+    .then(ports => ports.filter(isSpecified).sort(BySpecifiedOrder));
+};
+
 function log(param) {
   console.log(param);
   return Promise.resolve(param);
