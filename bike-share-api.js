@@ -288,8 +288,8 @@ function parseReservationResult(doc) {
     return mainInner.childNodes[nodeIndex].textContent.replace(regxHeadSpaces, '$1');
   }
   return Promise.resolve({
-    MessageTitle: messageTitle,
-    MessageInner: childNodeText(2),
+    Title: messageTitle,
+    Message: childNodeText(2),
     BikeNo: childNodeText(8),
     Passcode: childNodeText(15)
   });
