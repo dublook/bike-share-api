@@ -3,15 +3,21 @@ const methodName = process.argv[arg_i++];
 var body = {
   "MemberID": process.argv[arg_i++],
   "Password": process.argv[arg_i++],
-  "AreaId": process.argv[arg_i++]
+  "slackWebhookUrl": "https://hooks.slack.com/services/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"
 };
 var event = {
-  "body": JSON.stringify(body),
   "pathParameters": {
-    //"ParkingID": "10013" // kanda jidoh park
-    //"ParkingID": "10069" // toranomon
-    "ParkingID": "10302" // akihabara yodobashi
-  }
+    "AreaID": process.argv[arg_i++],
+    "ParkingID": "10302", // akihabara yodobashi
+    //"ParkingID": "10485", // 興和一橋ビル
+    //"ParkingID": "10013", // kanda jidoh park
+    //"ParkingID": "10069". // toranomon 10485
+    // A3-03.ＮＴＴ東日本神田ビル: , ID:10015
+    // A2-09.テラススクエア: ID:10038
+    // A2-01.神田駿河台下: ID:10008
+    "ParkingIds": "10013,10015,10485,10038,10008"
+  },
+  "body": JSON.stringify(body)
 };
 
 var context = {

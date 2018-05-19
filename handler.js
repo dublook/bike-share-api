@@ -1,11 +1,12 @@
 'use strict';
 
-const SlackNotification = require('./slack-notification.js');
+const Slack = require('./slack-notification.js');
 
 module.exports.ports = (event, context, callback) => {
   const param = JSON.parse(event.body);
   provideBikeShareApi(param)
     .listPorts(event.pathParameters.AreaID)
+    .then(sendNotification(param, Slack.formatPorts))
     .then(responseSuccess(callback))
     .catch(responseError(callback));
 };
@@ -14,7 +15,7 @@ module.exports.portsSpecified = (event, context, callback) => {
   const param = JSON.parse(event.body);
   provideBikeShareApi(param)
     .listSpecifiedPorts(event.pathParameters.AreaID, event.pathParameters.ParkingIds)
-    .then(sendNotification(param))
+    .then(sendNotification(param, Slack.formatPorts))
     .then(responseSuccess(callback))
     .catch(responseError(callback));
 };
@@ -72,25 +73,28 @@ function responseError(callback) {
   }
 }
 
-function sendNotification(param) {
+function sendNotification(param, opt_formatter) {
   return result => {
     const resolve = Promise.resolve(result);
-    if (param.slackWebhookUrl) {
-      try {
-        const slack = new SlackNotification(param.slackWebhookUrl);
-        console.log('Try to send Slack notification');
-        return slack.sendNotification(JSON.stringify(result))
-          .then(slackRes => {
-            console.log(`Slack notification response: ${slackRes}`);
-            return resolve;
-          })
-          .catch(error => {
-            console.log(error);
-            return resolve;
-          });
-      } catch (error) {
-        console.log(`Failed to send slack notification error`);
-      }
+    if (!param.slackWebhookUrl) {
+      return resolve;
+    }
+    try {
+      const formatter = opt_formatter || Slack.formatSimpleText;
+      const slack = new Slack(param.slackWebhookUrl);
+      console.log('Try to send Slack notification');
+      return formatter(result)
+        .then(payload => slack.sendNotification(payload))
+        .then(slackRes => {
+          console.log(`Slack notification response: ${slackRes}`);
+          return resolve;
+        })
+        .catch(error => {
+          console.log(`Failed to send slack notification: ${error}`);
+          return resolve;
+        });
+    } catch (error) {
+      console.log(`Failed to send slack notification: ${error}`);
     }
 
     return resolve;

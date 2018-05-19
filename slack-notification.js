@@ -4,12 +4,60 @@ function SlackNotification(webhookUrl) {
   this.webhookUrl = webhookUrl;
 }
 
-SlackNotification.prototype.sendNotification = function(text) {
-  const payload = {
-    text: text,
-    username: 'Bike Share API',
-    icon_emoji: ':bike:'
+// From https://material.io/design/color/#tools-for-picking-colors
+const COLORS = {
+  GREEN300: '#81C784',
+  GRAY300: '#E0E0E0',
+  YELLOW300: '#FFF176'
+};
+
+const PAYLOAD_BASE = {
+  username: 'Bike Share API',
+  icon_emoji: ':bike:' // TODO wanna get our own icon!
+};
+
+SlackNotification.formatSimpleText = function(obj) {
+  const payload = Object.assign({
+    text: JSON.stringify(obj)
+  }, PAYLOAD_BASE);
+  return Promise.resolve(payload);
+};
+
+SlackNotification.formatPortToAttachment = port => {
+  const color = (availableCount => {
+    if (availableCount > 3) {
+      return COLORS.GREEN300;
+    } else if (availableCount > 0) {
+      return COLORS.YELLOW300;
+    } else {
+      return COLORS.GRAY300;
+    }
+  })(port.AvailableCount);
+  return {
+    //"fallback":"ポート一覧",
+    //"pretext":"ポート一覧",
+    "color": color,
+    "fields":[
+      {
+        title: `${port.PortNameJa}: ${port.AvailableCount}台`,
+        "value":"This is much easier than I thought it would be.",
+        value: `ID:${port.ParkingID}`,
+        "short":true
+      }
+    ]
   };
+};
+
+SlackNotification.formatPorts = function(ports) {
+  const payload = Object.assign({
+    "text": ports.length === 0 ? 'ポートが見つかりませんでした' : `${ports.length}箇所のポートの利用可能台数`,
+    "attachments": ports.map(SlackNotification.formatPortToAttachment)
+  }, PAYLOAD_BASE);
+  return Promise.resolve(payload);
+};
+
+
+SlackNotification.prototype.sendNotification = function(payload) {
   const options = {
     uri: this.webhookUrl,
     json: payload,

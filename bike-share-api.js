@@ -206,9 +206,9 @@ function parsePortData(body) {
       } else if (node.nodeName === 'DIV') {
         var anchorInnerHtml = node.querySelector('a').innerHTML;
         var splitted = anchorInnerHtml.split('<br>');
-        portData['portNameJa'] = splitted[0];
-        portData['portNameEn'] = splitted[1];
-        portData['availableCount'] = Number(splitted[2].split('台')[0]);
+        portData['PortNameJa'] = splitted[0];
+        portData['PortNameEn'] = splitted[1];
+        portData['AvailableCount'] = Number(splitted[2].split('台')[0]);
       }
     });
     return portData;
