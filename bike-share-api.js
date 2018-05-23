@@ -27,7 +27,8 @@ CONST.EVENT_IDS = {
   SHOW_PORTS: '21614',
   BIKES: '25701',
   MAKE_RESERVATION: '25901',
-  CANCEL_RESERVATION: '27901'
+  CANCEL_RESERVATION: '27901',
+  OPEN_MY_PAGE: '23601'
 };
 
 /**
@@ -309,6 +310,17 @@ function parseReservationResult(doc) {
     BikeNo: childNodeText(8),
     Passcode: childNodeText(15)
   });
+}
+
+const PAGE_TITLES = {
+  MY_PAGE: 'マイページ/My page',
+  USAGE_DETAILS: 'ご利用履歴・明細/Usage details',
+  MEMBERSHIP: '会員情報/Membership information'
+};
+
+function getPageTitle(doc) {
+  const pageTitle = doc.querySelector('.main_inner_wide_tittle .tittle_h1')
+  return pageTitle ? pageTitle.textContent : '';
 }
 
 BikeShareApi.prototype.cancelReservation = function() {

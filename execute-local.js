@@ -8,7 +8,8 @@ var body = {
 var event = {
   "pathParameters": {
     "AreaID": process.argv[arg_i++],
-    "ParkingID": "10302", // akihabara yodobashi
+    "ParkingID": "10197",
+    //"ParkingID": "10009", // A2-02.西神田公園（北側）: ID:10009
     //"ParkingID": "10485", // 興和一橋ビル
     //"ParkingID": "10013", // kanda jidoh park
     //"ParkingID": "10069". // toranomon 10485
