@@ -20,7 +20,7 @@ $ npm install
 We chose [AVA](https://github.com/avajs/ava) as test framework.
 
 ```sh
-$ node test
+$ npm test
 # > ava --verbose
 #
 #
