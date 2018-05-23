@@ -39,6 +39,43 @@ test('Format make reservation success message', async t => {
   assertPayloadBase(t, payload);
 });
 
+test('Switch error message based on type: no-bikes-error', async t => {
+  t.plan(7);
+
+  const noBikesError = {
+    ErrorType: 'no-bikes-available',
+    ParkingID: '12345'
+  };
+  const payload = await SlackNotification.formatMakeReservationError(noBikesError);
+
+  t.is(payload.text, '利用予約エラー');
+  const attachment = payload.attachments[0];
+  t.is(attachment.color, '#E57373');
+  const field = attachment.fields[0];
+  t.is(field.title, '指定されたポートに利用可能な自転車がありません');
+  t.is(field.value, 'ParkingID:12345');
+  t.is(field.short, false);
+  assertPayloadBase(t, payload);
+});
+
+test('Switch error message based on type: other errors', async t => {
+  t.plan(7);
+
+  const otherError = 'Some other error';
+  const payload = await SlackNotification.formatMakeReservationError(otherError);
+
+  t.is(payload.text, '利用予約エラー');
+  const attachment = payload.attachments[0];
+  t.is(attachment.color, '#E57373');
+  const field = attachment.fields[0];
+  t.is(field.title, 'Some other error');
+  // TODO do not show undefined to users
+  t.is(field.value, 'ParkingID:undefined');
+  t.is(field.short, false);
+  assertPayloadBase(t, payload);
+});
+
+
 function assertPayloadBase(t, payload) {
   t.is(payload.username, 'Bike Share API');
   t.is(payload.icon_emoji, ':bike:');
