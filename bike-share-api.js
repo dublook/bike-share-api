@@ -204,16 +204,22 @@ function parsePortData(body) {
             break;
         }
       } else if (node.nodeName === 'DIV') {
-        var anchorInnerHtml = node.querySelector('a').innerHTML;
-        var splitted = anchorInnerHtml.split('<br>');
-        portData['PortNameJa'] = splitted[0];
-        portData['PortNameEn'] = splitted[1];
-        portData['AvailableCount'] = Number(splitted[2].split('台')[0]);
+        const anchorInner = node.querySelector('a');
+        Object.assign(portData, parsePortNameAndAvailableCount(anchorInner));
       }
     });
     return portData;
   });
   return Promise.resolve(portDataList);
+}
+
+function parsePortNameAndAvailableCount(anchorNode) {
+  const rows = anchorNode.innerHTML.split('<br>');
+  return {
+    PortNameJa: rows[0],
+    PortNameEn: rows[1],
+    AvailableCount: parseInt(rows[2].match(/\d+/)[0], 10)
+  };
 }
 
 BikeShareApi.prototype.listBikes = function(parkingId) {
