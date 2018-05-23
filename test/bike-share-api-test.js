@@ -1,5 +1,7 @@
 import test from 'ava'
 import rewire from 'rewire'
+const jsdom = require("jsdom");
+const { JSDOM } = jsdom;
 const BikeShareApi = rewire('../bike-share-api.js');
 
 test('Store MemberIdD and Password on initialization', t => {
@@ -48,4 +50,23 @@ test('listSpecifiedPorts', async t => {
   t.deepEqual(await api.listSpecifiedPorts(0, ''), []);
   t.deepEqual(await api.listSpecifiedPorts(0, null), []);
   t.deepEqual(await api.listSpecifiedPorts(0, 'a'), []);
+});
+
+test('Parse port names and available count', t => {
+  t.plan(3);
+
+  const portHtml = '<a>' +
+    'X1-11.江戸城和田倉門前' +
+    '<br>' +
+    'X1-11.Edo-joh castle Wadakuramon-mae' +
+    '<br>' +
+    '11台' +
+    '</a>';
+
+  const anchorNode = new JSDOM(portHtml).window.document.querySelector("a");
+  const parsePortNameAndAvailableCount = BikeShareApi.__get__('parsePortNameAndAvailableCount');
+  const portNameAndAvailableCount = parsePortNameAndAvailableCount(anchorNode);
+  t.is(portNameAndAvailableCount.PortNameJa, 'X1-11.江戸城和田倉門前');
+  t.is(portNameAndAvailableCount.PortNameEn, 'X1-11.Edo-joh castle Wadakuramon-mae');
+  t.is(portNameAndAvailableCount.AvailableCount, 11);
 });
