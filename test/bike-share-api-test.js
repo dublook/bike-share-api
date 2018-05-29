@@ -1,8 +1,47 @@
 import test from 'ava'
 import rewire from 'rewire'
+import request from 'request';
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 const BikeShareApi = rewire('../bike-share-api.js');
+global.td = require('testdouble')
+
+test.beforeEach(t => {
+  t.context.consoleLog = td.replace(console, 'log');
+  t.context.requestPost = td.replace(request, 'post');
+});
+
+test.afterEach(t => {
+  td.reset();
+});
+
+test('Send POST request and get success', async t => {
+  const ajaxPost = BikeShareApi.__get__('ajaxPost');
+
+  const form = { SessionID: 'exampleSessionID' };
+  const successResponse = { statusCode: 200 };
+  const responseBody = { Message: 'You got it' };
+  const error = null;
+  td.when(request.post(td.matchers.anything()))
+    .thenCallback(null, successResponse, JSON.stringify(responseBody));
+
+  const res = await ajaxPost(form);
+  t.is(res, '{"Message":"You got it"}');
+});
+
+test('Send POST request and get error response', async t => {
+  const ajaxPost = BikeShareApi.__get__('ajaxPost');
+
+  const form = { SessionID: 'exampleSessionID' };
+  const successResponse = { statusCode: 500 };
+  const responseBody = { Message: 'You got some error' };
+  const error = 'You got some error';
+  td.when(request.post(td.matchers.anything()))
+    .thenCallback(error, successResponse, JSON.stringify(responseBody));
+
+  const res = await ajaxPost(form).catch(error => error);
+  t.is(res, 'You got some error');
+});
 
 test('Store MemberIdD and Password on initialization', t => {
     t.plan(3);
