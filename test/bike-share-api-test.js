@@ -52,8 +52,14 @@ test('Store MemberIdD and Password on initialization', t => {
 });
 
 test('log', async t => {
-    const log = BikeShareApi.__get__('log');
-    t.is(await log('foo'), 'foo');
+    const explanation = td.explain(t.context.consoleLog);
+    console.log('aaa');
+    const logger = BikeShareApi.__get__('log');
+    t.is(await logger('foo'), 'foo');
+    console.log('bbb');
+
+    console.info(JSON.stringify(explanation));
+    td.verify(t.context.consoleLog('foo'));
 });
 
 test('parseDom', async t => {
