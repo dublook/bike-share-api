@@ -1,10 +1,13 @@
 import test from 'ava'
 import rewire from 'rewire'
+import request from 'request'
+global.td = require('testdouble');
+
 const SlackNotification = rewire('../slack-notification.js');
 
 test.beforeEach(t => {
   t.context.COLORS = SlackNotification.__get__('COLORS');
-  t.context.slack = new SlackNotification('');
+  t.context.slack = new SlackNotification('dummy-url');
 });
 
 test('Format simple text', async t => {
@@ -157,3 +160,26 @@ function assertPayloadBase(t, payload) {
   t.is(payload.username, 'Bike Share API');
   t.is(payload.icon_emoji, ':bike:');
 }
+
+test('A slack notification request gets success', async t => {
+  t.plan(3);
+  const payload = {
+    text: 'you so cool!'
+  }
+  td.replace(request, 'post');
+  td.when(request.post(td.matchers.anything()))
+    .thenCallback(null, { statusCode: 200 }, { ok: true });
+  const postExplanation = td.explain(request.post);
+
+  const body = await t.context.slack.sendNotification(payload);
+  t.deepEqual(body, { ok: true });
+  t.is(postExplanation.calls.length, 1);
+  t.deepEqual(postExplanation.calls[0].args[0], {
+    uri: 'dummy-url',
+    json: payload,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+
+});
