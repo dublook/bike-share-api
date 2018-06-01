@@ -1,8 +1,14 @@
 import test from 'ava'
 import rewire from 'rewire'
+import request from 'request'
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 const BikeShareApi = rewire('../bike-share-api.js');
+global.td = require('testdouble');
+
+test.beforeEach(t => {
+  t.context.CONST = BikeShareApi.__get__('CONST');
+});
 
 test('Store MemberIdD and Password on initialization', t => {
     t.plan(3);
@@ -69,4 +75,66 @@ test('Parse port names and available count', t => {
   t.is(portNameAndAvailableCount.PortNameJa, 'X1-11.江戸城和田倉門前');
   t.is(portNameAndAvailableCount.PortNameEn, 'X1-11.Edo-joh castle Wadakuramon-mae');
   t.is(portNameAndAvailableCount.AvailableCount, 11);
+});
+
+function ajaxPostArg(t, form) {
+  return {
+    uri: t.context.CONST.URI,
+    form: form,
+    encoding: null,
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }
+  }
+}
+
+test('A POST request gets success', async t => {
+  t.plan(3);
+  const form = {
+    SessionID: 'dummy-session-id'
+  }
+  td.replace(request, 'post');
+  td.when(request.post(td.matchers.anything()))
+    .thenCallback(null, { statusCode: 200 }, 'This is response body');
+  const postExplanation = td.explain(request.post);
+
+  const ajaxPost = BikeShareApi.__get__('ajaxPost');
+  const body = await ajaxPost(form);
+  t.is(body, 'This is response body');
+  t.is(postExplanation.calls.length, 1);
+  t.deepEqual(postExplanation.calls[0].args[0], ajaxPostArg(t, form));
+});
+
+test('A POST request gets 500 error', async t => {
+  t.plan(3);
+  const form = {
+    SessionID: 'dummy-session-id'
+  }
+  td.replace(request, 'post');
+  td.when(request.post(td.matchers.anything()))
+    .thenCallback(null, { statusCode: 500 }, 'This is response body');
+  const postExplanation = td.explain(request.post);
+
+  const ajaxPost = BikeShareApi.__get__('ajaxPost');
+  const body = await ajaxPost(form).catch(error => error);
+  t.is(body, null);
+  t.is(postExplanation.calls.length, 1);
+  t.deepEqual(postExplanation.calls[0].args[0], ajaxPostArg(t, form));
+});
+
+test('A POST request gets 200 but has error', async t => {
+  t.plan(3);
+  const form = {
+    SessionID: 'dummy-session-id'
+  }
+  td.replace(request, 'post');
+  td.when(request.post(td.matchers.anything()))
+    .thenCallback('something goes wrong', { statusCode: 200 }, 'This is response body');
+  const postExplanation = td.explain(request.post);
+
+  const ajaxPost = BikeShareApi.__get__('ajaxPost');
+  const body = await ajaxPost(form).catch(error => error);
+  t.is(body, 'something goes wrong');
+  t.is(postExplanation.calls.length, 1);
+  t.deepEqual(postExplanation.calls[0].args[0], ajaxPostArg(t, form));
 });
