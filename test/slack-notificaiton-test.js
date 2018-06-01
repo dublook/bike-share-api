@@ -183,3 +183,51 @@ test('A slack notification request gets success', async t => {
   });
 
 });
+
+test('A slack notification request gets 500 error', async t => {
+  t.plan(3);
+  const payload = {
+    text: 'you so cool!'
+  }
+  td.replace(request, 'post');
+  td.when(request.post(td.matchers.anything()))
+    .thenCallback(null, { statusCode: 500 }, { ok: false });
+  const postExplanation = td.explain(request.post);
+
+  const body = await t.context.slack.sendNotification(payload)
+    .catch(error => error);
+  t.deepEqual(body, { ok: false });
+  t.is(postExplanation.calls.length, 1);
+  t.deepEqual(postExplanation.calls[0].args[0], {
+    uri: 'dummy-url',
+    json: payload,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+
+});
+
+test('A slack notification request gets error object', async t => {
+  t.plan(3);
+  const payload = {
+    text: 'you so cool!'
+  }
+  td.replace(request, 'post');
+  td.when(request.post(td.matchers.anything()))
+    .thenCallback('some error', { statusCode: 200 }, { ok: false });
+  const postExplanation = td.explain(request.post);
+
+  const body = await t.context.slack.sendNotification(payload)
+    .catch(error => error);
+  t.deepEqual(body, { ok: false });
+  t.is(postExplanation.calls.length, 1);
+  t.deepEqual(postExplanation.calls[0].args[0], {
+    uri: 'dummy-url',
+    json: payload,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+
+});
