@@ -10,14 +10,14 @@
   },
   "devDependencies": {
     "ava": "^0.25.0",
-    "coveralls": "^3.0.1",
     "nyc": "^11.8.0",
     "rewire": "^4.0.1",
     "testdouble": "^3.8.1"
   },
   "scripts": {
     "test": "nyc ava --verbose",
-    "coverage": "nyc report --reporter=text-lcov | coveralls"
+    "coverage": "nyc --reporter=lcov --reporter=text-lcov npm test",
+    "check-coverage": "nyc check-coverage --lines 40 --functions 35 --branches 30"
   },
   "author": "",
   "license": "ISC",
