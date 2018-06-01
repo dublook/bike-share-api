@@ -1,5 +1,6 @@
 # bike-share-api
 [![Build Status](https://travis-ci.com/dublook/bike-share-api.svg?branch=master)](https://travis-ci.com/dublook/bike-share-api)
+[![Coverage Status](https://coveralls.io/repos/github/dublook/bike-share-api/badge.svg?branch=master)](https://coveralls.io/github/dublook/bike-share-api?branch=master)
 
 # How to start development (for Mac)
 ## Install node.js
