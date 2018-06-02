@@ -83,7 +83,7 @@ test('Parse port names and available count', t => {
   t.is(portNameAndAvailableCount.AvailableCount, 11);
 });
 
-test('Parse port names and available count', async t => {
+test('Parse ports', async t => {
   t.plan(3);
 
   const portsHtml = fs.readFileSync('test/html/ports.html', 'utf8');
