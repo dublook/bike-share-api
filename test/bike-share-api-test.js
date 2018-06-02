@@ -141,6 +141,21 @@ test('Parse bikes', async t => {
   });
 });
 
+test('Parse success reservation', async t => {
+  t.plan(1);
+
+  const reservationHtml = fs.readFileSync('test/html/reservation-success.html', 'utf8');
+  const doc = new JSDOM(reservationHtml).window.document;
+  const api = new BikeShareApi('Kota', 'dummy-password');
+
+  t.deepEqual(await api.parseReservationResult(doc), {
+    Title: 'Reservation success',
+    Message: 'You are ready to use bike. Go to port within 10 minutes.',
+    BikeNo: 'XXX-9999',
+    Passcode: '1234'
+  })
+});
+
 function ajaxPostArg(t, form) {
   return {
     uri: t.context.CONST.URI,
@@ -327,4 +342,70 @@ test('submitForm', async t => {
   t.is(ajaxPostExp.calls.length, 2);
   t.deepEqual(ajaxPostExp.calls[1].args, [dummyEventForm]);
   t.is(dom.getElementById('foo').textContent, 'Have fun!');
+});
+
+test('Try to make reservation but there is no bikes.', async t => {
+  t.plan(2);
+
+  const api = new BikeShareApi('Kota', 'dummy-password');
+  const parkingId = 'someParkingId';
+
+  td.replace(api, 'listBikes');
+  td.when(api.listBikes(parkingId)).thenResolve([]);
+  td.replace(api, 'submitForm');
+  td.replace(api, 'parseReservationResult');
+  const submitFormExplanation = td.explain(api.submitForm);
+
+  const reservation = await api.makeReservation(parkingId).catch(e => e);
+  t.deepEqual(reservation, {
+    ParkingID: parkingId,
+    ErrorType: 'no-bikes-available'
+  });
+  t.is(submitFormExplanation.calls.length, 0);
+});
+
+test('Make reservation successfully.', async t => {
+  t.plan(3);
+
+  const api = new BikeShareApi('Kota', 'dummy-password');
+  const parkingId = 'someParkingId';
+
+  td.replace(api, 'listBikes');
+  td.replace(api, 'submitForm');
+  td.replace(api, 'parseReservationResult');
+
+  td.when(api.listBikes(parkingId)).thenResolve([{
+    CycleID: 'CycleID1',
+    AttachID: 'AttachID1',
+    CycleTypeNo: 'CycleTypeNo1',
+    CycleEntID: 'CycleEntID1'
+  }, {
+    CycleID: 'CycleID2',
+    AttachID: 'AttachID2',
+    CycleTypeNo: 'CycleTypeNo2',
+    CycleEntID: 'CycleEntID2'
+  }]);
+  td.when(api.submitForm(td.matchers.anything())).thenResolve('doc');
+  const reservationResult = {
+    Title: 'title-reservation',
+    Message: 'msg-reservation',
+    BikeNo: 'XXX-9999',
+    Passcode: '1234'
+  };
+  td.when(api.parseReservationResult('doc')).thenResolve(reservationResult);
+  const submitFormExplanation = td.explain(api.submitForm);
+
+  const reservation = await api.makeReservation(parkingId);
+  t.deepEqual(reservation, reservationResult);
+  const CONST = t.context.CONST;
+  t.is(submitFormExplanation.calls.length, 1);
+  t.deepEqual(submitFormExplanation.calls[0].args, [{
+    EventNo: CONST.EVENT_IDS.MAKE_RESERVATION,
+      UserID: CONST.UserID,
+      MemberID: 'Kota',
+      CycleID: 'CycleID1',
+      AttachID: 'AttachID1',
+      CycleTypeNo: 'CycleTypeNo1',
+      CycleEntID: 'CycleEntID1'
+  }]);
 });

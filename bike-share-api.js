@@ -292,7 +292,6 @@ BikeShareApi.prototype.makeReservation = function(parkingId) {
     .then(bike => {
       return {
         EventNo: CONST.EVENT_IDS.MAKE_RESERVATION,
-        SessionID: this.SessionID,
         UserID: CONST.UserID,
         MemberID: this.MemberID,
         CycleID: bike.CycleID,
@@ -302,11 +301,11 @@ BikeShareApi.prototype.makeReservation = function(parkingId) {
       };
     })
     .then(form => this.submitForm(form))
-    .then(parseReservationResult)
+    .then(doc => this.parseReservationResult(doc))
     .catch(loggerError);
 };
 
-function parseReservationResult(doc) {
+BikeShareApi.prototype.parseReservationResult = function(doc) {
   const messageTitle = doc.querySelector('.tittle_h1').textContent;
   const mainInner = doc.querySelector('.main_inner_wide');
   const regxHeadSpaces = /^[ |\n\t　]+(.+)[ |\n\t　]*$/g;
