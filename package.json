@@ -16,6 +16,7 @@
   },
   "scripts": {
     "test": "nyc ava --verbose",
+    "watch:test": "ava --watch",
     "coverage": "nyc --reporter=lcov --reporter=text-lcov npm test",
     "coverage-report": "nyc --reporter=lcov --reporter=text-lcov",
     "check-coverage": "nyc check-coverage --lines 50 --functions 50 --branches 50"
