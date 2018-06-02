@@ -39,8 +39,8 @@ function BikeShareApi(MemberID, Password) {
   this.SessionID = null;
 }
 
-function ajaxPost(form) {
-  var options = {
+BikeShareApi.prototype.ajaxPost = function(form) {
+  const options = {
     uri: CONST.URI,
     form: form,
     encoding: null, // disable auto encoding by request module
@@ -66,7 +66,7 @@ BikeShareApi.prototype.submitForm = function(form, opt_logHtml) {
     return Promise.resolve(utf8Text);
   }
   return this.makeSession(form)
-    .then(() => ajaxPost(form))
+    .then(() => this.ajaxPost(form))
     .then(convertShiftJisToUtf8)
     .then((html) => opt_logHtml ? log(html) : html)
     .then(parseDom)

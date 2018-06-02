@@ -107,8 +107,8 @@ test('A POST request gets success', async t => {
     .thenCallback(null, { statusCode: 200 }, 'This is response body');
   const postExplanation = td.explain(request.post);
 
-  const ajaxPost = BikeShareApi.__get__('ajaxPost');
-  const body = await ajaxPost(form);
+  const api = new BikeShareApi('Kota', 'myPassword');
+  const body = await api.ajaxPost(form);
   t.is(body, 'This is response body');
   t.is(postExplanation.calls.length, 1);
   t.deepEqual(postExplanation.calls[0].args[0], ajaxPostArg(t, form));
@@ -124,8 +124,8 @@ test('A POST request gets 500 error', async t => {
     .thenCallback(null, { statusCode: 500 }, 'This is response body');
   const postExplanation = td.explain(request.post);
 
-  const ajaxPost = BikeShareApi.__get__('ajaxPost');
-  const body = await ajaxPost(form).catch(error => error);
+  const api = new BikeShareApi('Kota', 'myPassword');
+  const body = await api.ajaxPost(form).catch(error => error);
   t.is(body, null);
   t.is(postExplanation.calls.length, 1);
   t.deepEqual(postExplanation.calls[0].args[0], ajaxPostArg(t, form));
@@ -141,8 +141,8 @@ test('A POST request gets 200 but has error', async t => {
     .thenCallback('something goes wrong', { statusCode: 200 }, 'This is response body');
   const postExplanation = td.explain(request.post);
 
-  const ajaxPost = BikeShareApi.__get__('ajaxPost');
-  const body = await ajaxPost(form).catch(error => error);
+  const api = new BikeShareApi('Kota', 'myPassword');
+  const body = await api.ajaxPost(form).catch(error => error);
   t.is(body, 'something goes wrong');
   t.is(postExplanation.calls.length, 1);
   t.deepEqual(postExplanation.calls[0].args[0], ajaxPostArg(t, form));
