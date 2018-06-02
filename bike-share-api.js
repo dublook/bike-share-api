@@ -61,8 +61,8 @@ BikeShareApi.prototype.ajaxPost = function(form) {
 
 BikeShareApi.prototype.submitForm = function(form, opt_logHtml) {
   function convertShiftJisToUtf8(shiftJisText) {
-    var buf = new Buffer(shiftJisText, 'binary');
-    var utf8Text = iconv.decode(buf, 'Shift_JIS');
+    const buf = Buffer.from(shiftJisText, 'binary');
+    const utf8Text = iconv.decode(buf, 'Shift_JIS');
     return Promise.resolve(utf8Text);
   }
   return this.makeSession(form)

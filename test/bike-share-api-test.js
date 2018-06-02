@@ -12,10 +12,6 @@ test.beforeEach(t => {
   t.context.consoleExplanation = td.explain(console.log);
 });
 
-test.afterEach(t => {
-  td.reset();
-});
-
 test('Store MemberIdD and Password on initialization', t => {
     t.plan(3);
     const api = new BikeShareApi('Kota', 'myPassword');
@@ -236,4 +232,39 @@ test('makeSession gets error due to no sessionId dom', async t => {
   t.is(api.SessionID, null);
   t.is(form.SessionID, null);
 
+});
+
+test('submitForm', async t => {
+  const password = 'dummy-password-submitForm';
+  const sessionId = 'dummy-session-id-submitForm';
+
+  const api = new BikeShareApi('Kota', password);
+  td.replace(api, 'ajaxPost');
+  const CONST = t.context.CONST;
+  const loginForm = {
+    EventNo: CONST.EVENT_IDS.LOGIN,
+    MemberID: 'Kota',
+    Password: password
+  };
+  td.when(api.ajaxPost(loginForm)).thenResolve(
+    `<div><input name="SessionID" value="${sessionId}"/></div>`);
+  const dummyEventForm = {
+    EventNo: 'dummy-event',
+    MemberID: 'Kota',
+    Password: password,
+    SessionID: null
+  };
+  td.when(api.ajaxPost(dummyEventForm)).thenResolve(
+    '<div id="foo">Have fun!</div>');
+
+  const ajaxPostExp = td.explain(api.ajaxPost);
+
+  const dom = await api.submitForm(dummyEventForm);
+  t.deepEqual(ajaxPostExp.calls[0].args, [loginForm]);
+  t.is(api.SessionID, sessionId);
+  t.is(ajaxPostExp.calls.length, 2);
+  t.deepEqual(ajaxPostExp.calls[1].args, [Object.assign({
+    SessionID: sessionId
+  }, dummyEventForm)]);
+  t.is(dom.getElementById('foo').textContent, 'Have fun!');
 });
