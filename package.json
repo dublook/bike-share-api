@@ -18,7 +18,7 @@
     "test": "nyc ava --verbose",
     "coverage": "nyc --reporter=lcov --reporter=text-lcov npm test",
     "coverage-report": "nyc --reporter=lcov --reporter=text-lcov",
-    "check-coverage": "nyc check-coverage --lines 40 --functions 35 --branches 30"
+    "check-coverage": "nyc check-coverage --lines 50 --functions 50 --branches 50"
   },
   "author": "",
   "license": "ISC",

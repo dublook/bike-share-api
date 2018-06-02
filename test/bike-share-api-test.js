@@ -8,6 +8,12 @@ global.td = require('testdouble');
 
 test.beforeEach(t => {
   t.context.CONST = BikeShareApi.__get__('CONST');
+  td.replace(console, 'log');
+  t.context.consoleExplanation = td.explain(console.log);
+});
+
+test.afterEach(t => {
+  td.reset();
 });
 
 test('Store MemberIdD and Password on initialization', t => {
@@ -18,9 +24,12 @@ test('Store MemberIdD and Password on initialization', t => {
     t.is(api.SessionID, null);
 });
 
-test('log', async t => {
-    const log = BikeShareApi.__get__('log');
-    t.is(await log('foo'), 'foo');
+test('wrapper of console.log', async t => {
+  t.plan(3);
+  const log = BikeShareApi.__get__('log');
+  t.is(await log('foo'), 'foo');
+  t.is(t.context.consoleExplanation.calls.length, 1);
+  t.deepEqual(t.context.consoleExplanation.calls[0].args, ['foo']);
 });
 
 test('parseDom', async t => {
@@ -137,4 +146,94 @@ test('A POST request gets 200 but has error', async t => {
   t.is(body, 'something goes wrong');
   t.is(postExplanation.calls.length, 1);
   t.deepEqual(postExplanation.calls[0].args[0], ajaxPostArg(t, form));
+});
+
+test('MemberID cannot be empty', async t => {
+  t.plan(1);
+  const form = {
+    SessionID: null,
+  }
+  const api = new BikeShareApi('', 'myPassword');
+  t.is(await api.makeSession(form).catch(error => error),
+    'MemberID cannot be specified or empty');
+});
+
+test('Password cannot be empty', async t => {
+  t.plan(2);
+  const form = {
+    SessionID: null,
+  }
+  let api = new BikeShareApi('Kota', '');
+  t.is(await api.makeSession(form).catch(error => error),
+    'Password cannot be specified or empty');
+  api = new BikeShareApi('Kota', null);
+  t.is(await api.makeSession(form).catch(error => error),
+    'Password cannot be specified or empty');
+});
+
+test('Skip login if already', async t => {
+  t.plan(2);
+  const form = {
+    SessionID: 'dummy-session-id',
+    EventNo: t.context.CONST.EVENT_IDS.SHOW_PORTS
+  }
+  const api = new BikeShareApi('Kota', 'dummy-password');
+  td.replace(api, 'submitForm');
+  const explanation = td.explain(api.submitForm)
+
+  t.is(await api.makeSession(form), undefined);
+  t.is(explanation.calls.length, 0);
+});
+
+test('makeSession gets success', async t => {
+  t.plan(5);
+  const form = {
+    SessionID: null,
+    EventNo: t.context.CONST.EVENT_IDS.SHOW_PORTS
+  }
+  const api = new BikeShareApi('Kota', 'dummy-password');
+  td.replace(api, 'submitForm');
+
+  td.when(api.submitForm(td.matchers.anything()))
+    .thenResolve(BikeShareApi.__get__('parseDom')
+      ('<div><input name="SessionID" value="dummy-session-id"/></div>'));
+  const submitFormExplanation = td.explain(api.submitForm);
+
+  t.is(await api.makeSession(form), undefined);
+  t.is(submitFormExplanation.calls.length, 1);
+  t.deepEqual(submitFormExplanation.calls[0].args, [{
+    EventNo: t.context.CONST.EVENT_IDS.LOGIN,
+    MemberID: 'Kota',
+    Password: 'dummy-password'
+  }]);
+  // TODO remove side effects
+  t.is(api.SessionID, 'dummy-session-id');
+  t.is(form.SessionID, 'dummy-session-id');
+
+});
+
+test('makeSession gets error due to no sessionId dom', async t => {
+  t.plan(5);
+  const form = {
+    SessionID: null,
+    EventNo: t.context.CONST.EVENT_IDS.SHOW_PORTS
+  }
+  const api = new BikeShareApi('Kota', 'dummy-password');
+  td.replace(api, 'submitForm');
+
+  td.when(api.submitForm(td.matchers.anything()))
+    .thenResolve(BikeShareApi.__get__('parseDom')('<div></div>'));
+  const submitFormExplanation = td.explain(api.submitForm);
+
+  t.is(await api.makeSession(form).catch(e=>e), 'SessionID element is not found');
+  t.is(submitFormExplanation.calls.length, 1);
+  t.deepEqual(submitFormExplanation.calls[0].args, [{
+    EventNo: t.context.CONST.EVENT_IDS.LOGIN,
+    MemberID: 'Kota',
+    Password: 'dummy-password'
+  }]);
+  // TODO remove side effects
+  t.is(api.SessionID, null);
+  t.is(form.SessionID, null);
+
 });
