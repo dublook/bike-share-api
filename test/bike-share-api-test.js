@@ -1,6 +1,7 @@
 import test from 'ava'
 import rewire from 'rewire'
 import request from 'request'
+import fs from 'fs'
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 const BikeShareApi = rewire('../bike-share-api.js');
@@ -80,6 +81,35 @@ test('Parse port names and available count', t => {
   t.is(portNameAndAvailableCount.PortNameJa, 'X1-11.江戸城和田倉門前');
   t.is(portNameAndAvailableCount.PortNameEn, 'X1-11.Edo-joh castle Wadakuramon-mae');
   t.is(portNameAndAvailableCount.AvailableCount, 11);
+});
+
+test('Parse port names and available count', async t => {
+  t.plan(3);
+
+  const portsHtml = fs.readFileSync('test/html/ports.html', 'utf8');
+  const doc = new JSDOM(portsHtml).window.document;
+  const parsePortData = BikeShareApi.__get__('parsePortData');
+
+  const ports = await parsePortData(doc);
+  t.is(ports.length, 2);
+  t.deepEqual(ports[0], {
+    ParkingID: 'ParkingID1',
+    ParkingEntID: 'ParkingEntID1',
+    ParkingLat: 'ParkingLat1',
+    ParkingLon: 'ParkingLon1',
+    PortNameJa: 'X1-11.江戸城和田倉門前',
+    PortNameEn: 'X1-11.Edo-joh castle Wadakuramon-mae',
+    AvailableCount: 20
+  });
+  t.deepEqual(ports[1], {
+    ParkingID: 'ParkingID2',
+    ParkingEntID: 'ParkingEntID2',
+    ParkingLat: 'ParkingLat2',
+    ParkingLon: 'ParkingLon2',
+    PortNameJa: 'X1-12.江戸城天守閣',
+    PortNameEn: 'X1-11.Edo-joh castle Tenshukaku',
+    AvailableCount: 0
+  })
 });
 
 function ajaxPostArg(t, form) {
