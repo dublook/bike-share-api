@@ -3,6 +3,6 @@ node_js:
   - 6.10.3
 after_success:
   - npm install coveralls
-  - npm run coverage-report
-  - npm run check-coverage
+  - npm run coverage:report
+  - npm run coverage:check
   - nyc report --reporter=text-lcov | coveralls

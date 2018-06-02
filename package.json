@@ -19,8 +19,8 @@
     "watch:test": "nyc ava --watch  --verbose",
     "watch:test:sync": "nyc ava --watch  --verbose -s",
     "coverage": "nyc --reporter=lcov --reporter=text-lcov npm test",
-    "coverage-report": "nyc --reporter=lcov --reporter=text-lcov",
-    "check-coverage": "nyc check-coverage --statements 70 --branches 70 --functions 70 --lines 70"
+    "coverage:report": "nyc --reporter=lcov --reporter=text-lcov",
+    "coverage:check": "nyc check-coverage --statements 80 --branches 85 --functions 75 --lines 80"
   },
   "author": "",
   "license": "ISC",
