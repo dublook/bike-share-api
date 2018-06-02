@@ -59,7 +59,7 @@ BikeShareApi.prototype.ajaxPost = function(form) {
   });
 }
 
-BikeShareApi.prototype.submitForm = function(form, opt_logHtml) {
+BikeShareApi.prototype.submitForm = function(form) {
   function convertShiftJisToUtf8(shiftJisText) {
     const buf = Buffer.from(shiftJisText, 'binary');
     const utf8Text = iconv.decode(buf, 'Shift_JIS');
@@ -68,7 +68,6 @@ BikeShareApi.prototype.submitForm = function(form, opt_logHtml) {
   return this.makeSession(form)
     .then(() => this.ajaxPost(form))
     .then(convertShiftJisToUtf8)
-    .then((html) => opt_logHtml ? log(html) : html)
     .then(parseDom)
     .then(checkErrorText);
 };
