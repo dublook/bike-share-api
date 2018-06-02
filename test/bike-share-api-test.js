@@ -112,6 +112,35 @@ test('Parse port names and available count', async t => {
   })
 });
 
+test('Parse bikes', async t => {
+  t.plan(3);
+
+  const portsHtml = fs.readFileSync('test/html/bikes.html', 'utf8');
+  const doc = new JSDOM(portsHtml).window.document;
+  const parseBikesData = BikeShareApi.__get__('parseBikesData');
+
+  const bikes = await parseBikesData(doc);
+  t.is(bikes.length, 2);
+  t.deepEqual(bikes[0], {
+    CycleID: 'CycleID1',
+    CycleTypeNo: 'CycleTypeNo1',
+    CycleEntID: 'CycleEntID1',
+    CycLat: 'CycLat1',
+    CycLon: 'CycLon1',
+    AttachID: 'AttachID1',
+    CycleName: 'BIKENAME1'
+  });
+  t.deepEqual(bikes[1], {
+    CycleID: 'CycleID2',
+    CycleTypeNo: 'CycleTypeNo2',
+    CycleEntID: 'CycleEntID2',
+    CycLat: 'CycLat2',
+    CycLon: 'CycLon2',
+    AttachID: 'AttachID2',
+    CycleName: 'BIKENAME2'
+  });
+});
+
 function ajaxPostArg(t, form) {
   return {
     uri: t.context.CONST.URI,
