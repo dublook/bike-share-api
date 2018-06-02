@@ -188,26 +188,25 @@ test('A POST request gets 500 error', async t => {
 
 test('A POST request gets 200 but has error', async t => {
   t.plan(3);
-  const form = {
-    SessionID: 'dummy-session-id'
-  }
+  const form = {};
   td.replace(request, 'post');
   td.when(request.post(td.matchers.anything()))
     .thenCallback('something goes wrong', { statusCode: 200 }, 'This is response body');
   const postExplanation = td.explain(request.post);
 
   const api = new BikeShareApi('Kota', 'myPassword');
+  const sessionId = 'dummy-session-id';
+  api.SessionID = sessionId;
   const body = await api.ajaxPost(form).catch(error => error);
   t.is(body, 'something goes wrong');
   t.is(postExplanation.calls.length, 1);
-  t.deepEqual(postExplanation.calls[0].args[0], ajaxPostArg(t, form));
+  t.deepEqual(postExplanation.calls[0].args[0],
+    ajaxPostArg(t, formWithSessionId(form, sessionId)));
 });
 
 test('MemberID cannot be empty', async t => {
   t.plan(1);
-  const form = {
-    SessionID: null,
-  }
+  const form = {};
   const api = new BikeShareApi('', 'myPassword');
   t.is(await api.makeSession(form).catch(error => error),
     'MemberID cannot be specified or empty');
@@ -215,9 +214,7 @@ test('MemberID cannot be empty', async t => {
 
 test('Password cannot be empty', async t => {
   t.plan(2);
-  const form = {
-    SessionID: null,
-  }
+  const form = {};
   let api = new BikeShareApi('Kota', '');
   t.is(await api.makeSession(form).catch(error => error),
     'Password cannot be specified or empty');
@@ -226,17 +223,22 @@ test('Password cannot be empty', async t => {
     'Password cannot be specified or empty');
 });
 
+function formWithSessionId(form, SessionID) {
+  return Object.assign({}, form, { SessionID: SessionID });
+}
+
 test('Skip login if already', async t => {
   t.plan(2);
   const form = {
-    SessionID: 'dummy-session-id',
     EventNo: t.context.CONST.EVENT_IDS.SHOW_PORTS
   }
   const api = new BikeShareApi('Kota', 'dummy-password');
+  const sessionId = 'dummy-session-id';
+  api.SessionID = sessionId;
   td.replace(api, 'submitForm');
   const explanation = td.explain(api.submitForm)
 
-  t.is(await api.makeSession(form), undefined);
+  t.is(await api.makeSession(form), sessionId);
   t.is(explanation.calls.length, 0);
 });
 
@@ -249,21 +251,22 @@ test('makeSession gets success', async t => {
   const api = new BikeShareApi('Kota', 'dummy-password');
   td.replace(api, 'submitForm');
 
+  const sessionId = 'dummy-session-id';
   td.when(api.submitForm(td.matchers.anything()))
     .thenResolve(BikeShareApi.__get__('parseDom')
-      ('<div><input name="SessionID" value="dummy-session-id"/></div>'));
+      (`<div><input name="SessionID" value="${sessionId}"/></div>`));
   const submitFormExplanation = td.explain(api.submitForm);
 
-  t.is(await api.makeSession(form), undefined);
+  t.is(await api.makeSession(form), sessionId);
   t.is(submitFormExplanation.calls.length, 1);
   t.deepEqual(submitFormExplanation.calls[0].args, [{
     EventNo: t.context.CONST.EVENT_IDS.LOGIN,
     MemberID: 'Kota',
     Password: 'dummy-password'
   }]);
-  // TODO remove side effects
-  t.is(api.SessionID, 'dummy-session-id');
-  t.is(form.SessionID, 'dummy-session-id');
+
+  t.is(api.SessionID, null);
+  t.is(form.SessionID, null);
 
 });
 
@@ -322,8 +325,6 @@ test('submitForm', async t => {
   t.deepEqual(ajaxPostExp.calls[0].args, [loginForm]);
   t.is(api.SessionID, sessionId);
   t.is(ajaxPostExp.calls.length, 2);
-  t.deepEqual(ajaxPostExp.calls[1].args, [Object.assign({
-    SessionID: sessionId
-  }, dummyEventForm)]);
+  t.deepEqual(ajaxPostExp.calls[1].args, [dummyEventForm]);
   t.is(dom.getElementById('foo').textContent, 'Have fun!');
 });

@@ -40,9 +40,12 @@ function BikeShareApi(MemberID, Password) {
 }
 
 BikeShareApi.prototype.ajaxPost = function(form) {
+  const formWithSessionID = this.SessionID
+    ? Object.assign({}, form, { SessionID: this.SessionID })
+    : form;
   const options = {
     uri: CONST.URI,
-    form: form,
+    form: formWithSessionID,
     encoding: null, // disable auto encoding by request module
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
@@ -66,7 +69,10 @@ BikeShareApi.prototype.submitForm = function(form) {
     return Promise.resolve(utf8Text);
   }
   return this.makeSession(form)
-    .then(() => this.ajaxPost(form))
+    .then(sessionId => {
+      this.SessionID = sessionId;
+      return this.ajaxPost(form);
+    })
     .then(convertShiftJisToUtf8)
     .then(parseDom)
     .then(checkErrorText);
@@ -85,14 +91,14 @@ BikeShareApi.prototype.makeSession = function(requestForm) {
       return Promise.reject('SessionID element is not found');
     }
   }
-  function needInterceptAndLogin() {
+  function needInterceptAndLogin(api) {
     return requestForm.EventNo !== CONST.EVENT_IDS.LOGIN
-      && requestForm.SessionID == null;
+      && api.SessionID == null;
   }
 
-  if (!needInterceptAndLogin()) {
+  if (!needInterceptAndLogin(this)) {
     // already login
-    return Promise.resolve();
+    return Promise.resolve(this.SessionID);
   }
 
   if (isBlank(this.MemberID)) {
@@ -110,10 +116,9 @@ BikeShareApi.prototype.makeSession = function(requestForm) {
   console.log('Try to login');
   return this.submitForm(loginForm)
     .then(parseSessionId)
-    .then((sessionId) => {
+    .then(sessionId => {
       console.log('Successfully login');
-      this.SessionID = sessionId;
-      requestForm.SessionID = sessionId;
+      return Promise.resolve(sessionId)
     })
     .catch((error) => {
       console.log('Authentication failed. Check your memberID and password');
