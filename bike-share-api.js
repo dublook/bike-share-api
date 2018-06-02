@@ -159,8 +159,8 @@ function log(param) {
 }
 
 function loggerError(param) {
-  console.log(param);
-  return Promise.reject(param);
+  console.error(param);
+  return Promise.resolve(param);
 }
 
 function parseDom(responseBody) {
