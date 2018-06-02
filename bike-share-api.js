@@ -39,10 +39,13 @@ function BikeShareApi(MemberID, Password) {
   this.SessionID = null;
 }
 
-function ajaxPost(form) {
-  var options = {
+BikeShareApi.prototype.ajaxPost = function(form) {
+  const formWithSessionID = this.SessionID
+    ? Object.assign({}, form, { SessionID: this.SessionID })
+    : form;
+  const options = {
     uri: CONST.URI,
-    form: form,
+    form: formWithSessionID,
     encoding: null, // disable auto encoding by request module
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
@@ -59,16 +62,18 @@ function ajaxPost(form) {
   });
 }
 
-BikeShareApi.prototype.submitForm = function(form, opt_logHtml) {
+BikeShareApi.prototype.submitForm = function(form) {
   function convertShiftJisToUtf8(shiftJisText) {
-    var buf = new Buffer(shiftJisText, 'binary');
-    var utf8Text = iconv.decode(buf, 'Shift_JIS');
+    const buf = Buffer.from(shiftJisText, 'binary');
+    const utf8Text = iconv.decode(buf, 'Shift_JIS');
     return Promise.resolve(utf8Text);
   }
   return this.makeSession(form)
-    .then(() => ajaxPost(form))
+    .then(sessionId => {
+      this.SessionID = sessionId;
+      return this.ajaxPost(form);
+    })
     .then(convertShiftJisToUtf8)
-    .then((html) => opt_logHtml ? log(html) : html)
     .then(parseDom)
     .then(checkErrorText);
 };
@@ -86,14 +91,14 @@ BikeShareApi.prototype.makeSession = function(requestForm) {
       return Promise.reject('SessionID element is not found');
     }
   }
-  function needInterceptAndLogin() {
+  function needInterceptAndLogin(api) {
     return requestForm.EventNo !== CONST.EVENT_IDS.LOGIN
-      && requestForm.SessionID == null;
+      && api.SessionID == null;
   }
 
-  if (!needInterceptAndLogin()) {
+  if (!needInterceptAndLogin(this)) {
     // already login
-    return Promise.resolve();
+    return Promise.resolve(this.SessionID);
   }
 
   if (isBlank(this.MemberID)) {
@@ -111,10 +116,9 @@ BikeShareApi.prototype.makeSession = function(requestForm) {
   console.log('Try to login');
   return this.submitForm(loginForm)
     .then(parseSessionId)
-    .then((sessionId) => {
+    .then(sessionId => {
       console.log('Successfully login');
-      this.SessionID = sessionId;
-      requestForm.SessionID = sessionId;
+      return Promise.resolve(sessionId)
     })
     .catch((error) => {
       console.log('Authentication failed. Check your memberID and password');
@@ -160,8 +164,8 @@ function log(param) {
 }
 
 function loggerError(param) {
-  console.log(param);
-  return Promise.reject(param);
+  console.error(param);
+  return Promise.resolve(param);
 }
 
 function parseDom(responseBody) {
@@ -288,7 +292,6 @@ BikeShareApi.prototype.makeReservation = function(parkingId) {
     .then(bike => {
       return {
         EventNo: CONST.EVENT_IDS.MAKE_RESERVATION,
-        SessionID: this.SessionID,
         UserID: CONST.UserID,
         MemberID: this.MemberID,
         CycleID: bike.CycleID,
@@ -298,11 +301,11 @@ BikeShareApi.prototype.makeReservation = function(parkingId) {
       };
     })
     .then(form => this.submitForm(form))
-    .then(parseReservationResult)
+    .then(doc => this.parseReservationResult(doc))
     .catch(loggerError);
 };
 
-function parseReservationResult(doc) {
+BikeShareApi.prototype.parseReservationResult = function(doc) {
   const messageTitle = doc.querySelector('.tittle_h1').textContent;
   const mainInner = doc.querySelector('.main_inner_wide');
   const regxHeadSpaces = /^[ |\n\t　]+(.+)[ |\n\t　]*$/g;
