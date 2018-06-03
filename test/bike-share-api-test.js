@@ -61,6 +61,33 @@ test('Check error text when some errors', async t => {
   t.is(await checkErrorText(doc).catch(e => e), 'You got error');
 });
 
+test('List ports successfully', async t => {
+  const CONST = t.context.CONST;
+  const api = new BikeShareApi('Kota', 'dummy-password');
+  td.replace(api, 'submitForm');
+  td.when(api.submitForm(td.matchers.anything())).thenResolve('doc');
+  const submitFormExplanation = td.explain(api.submitForm);
+
+  td.replace(api, 'parsePortData');
+  td.when(api.parsePortData(td.matchers.anything())).thenResolve('ports');
+
+  t.is(await api.listPorts('areaId1'), 'ports');
+  t.is(submitFormExplanation.calls.length, 1);
+  t.deepEqual(submitFormExplanation.calls[0].args, [{
+    EventNo: CONST.EVENT_IDS.SHOW_PORTS,
+    MemberID: 'Kota',
+    UserID: CONST.UserID,
+    GetInfoNum: '120',
+    GetInfoTopNum: '1',
+    MapType: '1',
+    MapCenterLat: '',
+    MapCenterLon: '',
+    MapZoom: '13',
+    AreaEntID: '',
+    AreaID: 'areaId1'
+  }])
+});
+
 test('listSpecifiedPorts', async t => {
   function toPort(i) {
     return { ParkingID: i.toString() };
@@ -104,9 +131,9 @@ test('Parse ports', async t => {
 
   const portsHtml = fs.readFileSync('test/html/ports.html', 'utf8');
   const doc = new JSDOM(portsHtml).window.document;
-  const parsePortData = BikeShareApi.__get__('parsePortData');
+  const api = new BikeShareApi('Kota', 'dummy-password');
 
-  const ports = await parsePortData(doc);
+  const ports = await api.parsePortData(doc);
   t.is(ports.length, 2);
   t.deepEqual(ports[0], {
     ParkingID: 'ParkingID1',
