@@ -129,7 +129,6 @@ BikeShareApi.prototype.makeSession = function(requestForm) {
 BikeShareApi.prototype.listPorts = function(areaId) {
   const form = {
     EventNo: CONST.EVENT_IDS.SHOW_PORTS,
-    SessionID: this.SessionID,
     MemberID: this.MemberID,
     UserID: CONST.UserID,
     GetInfoNum: '120',
@@ -143,7 +142,7 @@ BikeShareApi.prototype.listPorts = function(areaId) {
   };
   console.log('Try to get port list');
   return this.submitForm(form)
-    .then(parsePortData);
+    .then(doc => this.parsePortData(doc));
 };
 
 BikeShareApi.prototype.listSpecifiedPorts = function(areaId, parkingIdsQuery) {
@@ -191,7 +190,7 @@ function checkErrorText(doc) {
 }
 
 
-function parsePortData(body) {
+BikeShareApi.prototype.parsePortData = function(body) {
   const selector = 'div.main_inner_wide_box form[name^="tab_"]';
   const portForms = body.querySelectorAll(selector);
   console.log('portForms.length: ' + portForms.length);
@@ -231,7 +230,6 @@ BikeShareApi.prototype.listBikes = function(parkingId) {
     ParkingEntID: CONST.ParkingEntID,
     ParkingID: parkingId,
     EventNo: CONST.EVENT_IDS.BIKES,
-    SessionID: this.SessionID,
     MemberID: this.MemberID,
     UserID: CONST.UserID,
     GetInfoNum: '20',
@@ -241,10 +239,10 @@ BikeShareApi.prototype.listBikes = function(parkingId) {
   };
   console.log('Try to get bike list for parkingId: ' + parkingId);
   return this.submitForm(form)
-    .then(parseBikesData);
+    .then(doc => this.parseBikesData(doc));
 };
 
-function parseBikesData(body) {
+BikeShareApi.prototype.parseBikesData = function(body) {
   // TODO remove duplication
   const selector = 'div.main_inner_wide_box form[name^="tab_"]';
   const forms = body.querySelectorAll(selector);
@@ -323,7 +321,6 @@ BikeShareApi.prototype.parseReservationResult = function(doc) {
 BikeShareApi.prototype.cancelReservation = function() {
   const form = {
     EventNo: CONST.EVENT_IDS.CANCEL_RESERVATION,
-    SessionID: this.SessionID,
     UserID: CONST.UserID,
     MemberID: this.MemberID
   };

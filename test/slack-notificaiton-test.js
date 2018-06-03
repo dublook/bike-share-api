@@ -156,6 +156,37 @@ test('Format port to attachment with 4 available counts', async t => {
   t.is(field.short, false);
 });
 
+test('Format 0 ports', async t => {
+  t.plan(4);
+
+  const portsFormatted = await SlackNotification.formatPorts([]);
+
+  t.is(portsFormatted.text, 'ポートが見つかりませんでした');
+  t.deepEqual(portsFormatted.attachments, []);
+  assertPayloadBase(t, portsFormatted);
+});
+
+test('Format 2 ports', async t => {
+  t.plan(4);
+
+  const portsFormatted = await SlackNotification.formatPorts([{
+    AvailableCount: 0,
+    PortNameJa: 'PortNameJa1',
+    PortNameEn: 'PortNameEn1',
+    ParkingID: 'ParkingID1'
+  }, {
+    AvailableCount: 4,
+    PortNameJa: 'PortNameJa2',
+    PortNameEn: 'PortNameEn2',
+    ParkingID: 'ParkingID2'
+  }]);
+
+
+  t.is(portsFormatted.text, '2箇所のポートの利用可能台数');
+  t.is(portsFormatted.attachments.length, 2);
+  assertPayloadBase(t, portsFormatted);
+});
+
 function assertPayloadBase(t, payload) {
   t.is(payload.username, 'Bike Share API');
   t.is(payload.icon_emoji, ':bike:');

@@ -45,6 +45,74 @@ test('isPasswordNotChangedLongTimeError', t => {
     t.false(isPasswordNotChangedLongTimeError('other text'));
 });
 
+test('Check error text when no errors', async t => {
+  const checkErrorText = BikeShareApi.__get__('checkErrorText');
+  const parseDom = BikeShareApi.__get__('parseDom');
+
+  const doc = await parseDom('<div id="foo"></div>');
+  t.is(await checkErrorText(doc), doc);
+});
+
+test('Check error text when some errors', async t => {
+  const checkErrorText = BikeShareApi.__get__('checkErrorText');
+  const parseDom = BikeShareApi.__get__('parseDom');
+
+  const doc = await parseDom('<div id="foo"><div class="err_text">You got error</div></div>');
+  t.is(await checkErrorText(doc).catch(e => e), 'You got error');
+});
+
+test('List ports successfully', async t => {
+  const CONST = t.context.CONST;
+  const api = new BikeShareApi('Kota', 'dummy-password');
+  td.replace(api, 'submitForm');
+  td.when(api.submitForm(td.matchers.anything())).thenResolve('doc');
+  const submitFormExplanation = td.explain(api.submitForm);
+
+  td.replace(api, 'parsePortData');
+  td.when(api.parsePortData(td.matchers.anything())).thenResolve('ports');
+
+  t.is(await api.listPorts('areaId1'), 'ports');
+  t.is(submitFormExplanation.calls.length, 1);
+  t.deepEqual(submitFormExplanation.calls[0].args, [{
+    EventNo: CONST.EVENT_IDS.SHOW_PORTS,
+    MemberID: 'Kota',
+    UserID: CONST.UserID,
+    GetInfoNum: '120',
+    GetInfoTopNum: '1',
+    MapType: '1',
+    MapCenterLat: '',
+    MapCenterLon: '',
+    MapZoom: '13',
+    AreaEntID: '',
+    AreaID: 'areaId1'
+  }])
+});
+
+test('List bikes successfully', async t => {
+  const CONST = t.context.CONST;
+  const api = new BikeShareApi('Kota', 'dummy-password');
+  td.replace(api, 'submitForm');
+  td.when(api.submitForm(td.matchers.anything())).thenResolve('doc');
+  const submitFormExplanation = td.explain(api.submitForm);
+
+  td.replace(api, 'parseBikesData');
+  td.when(api.parseBikesData(td.matchers.anything())).thenResolve('bikes');
+
+  t.is(await api.listBikes('parkingId1'), 'bikes');
+  t.is(submitFormExplanation.calls.length, 1);
+  t.deepEqual(submitFormExplanation.calls[0].args, [{
+    ParkingEntID: CONST.ParkingEntID,
+    ParkingID: 'parkingId1',
+    EventNo: CONST.EVENT_IDS.BIKES,
+    MemberID: 'Kota',
+    UserID: CONST.UserID,
+    GetInfoNum: '20',
+    GetInfoTopNum: '1',
+    ParkingLat: '',
+    ParkingLon: ''
+  }])
+});
+
 test('listSpecifiedPorts', async t => {
   function toPort(i) {
     return { ParkingID: i.toString() };
@@ -88,9 +156,9 @@ test('Parse ports', async t => {
 
   const portsHtml = fs.readFileSync('test/html/ports.html', 'utf8');
   const doc = new JSDOM(portsHtml).window.document;
-  const parsePortData = BikeShareApi.__get__('parsePortData');
+  const api = new BikeShareApi('Kota', 'dummy-password');
 
-  const ports = await parsePortData(doc);
+  const ports = await api.parsePortData(doc);
   t.is(ports.length, 2);
   t.deepEqual(ports[0], {
     ParkingID: 'ParkingID1',
@@ -117,9 +185,9 @@ test('Parse bikes', async t => {
 
   const portsHtml = fs.readFileSync('test/html/bikes.html', 'utf8');
   const doc = new JSDOM(portsHtml).window.document;
-  const parseBikesData = BikeShareApi.__get__('parseBikesData');
+  const api = new BikeShareApi('Kota', 'dummy-password');
 
-  const bikes = await parseBikesData(doc);
+  const bikes = await api.parseBikesData(doc);
   t.is(bikes.length, 2);
   t.deepEqual(bikes[0], {
     CycleID: 'CycleID1',
@@ -407,5 +475,21 @@ test('Make reservation successfully.', async t => {
       AttachID: 'AttachID1',
       CycleTypeNo: 'CycleTypeNo1',
       CycleEntID: 'CycleEntID1'
+  }]);
+});
+
+test('Cancel reservation successfully.', async t => {
+  const CONST = t.context.CONST;
+  const api = new BikeShareApi('Kota', 'dummy-password');
+  td.replace(api, 'submitForm');
+  td.when(api.submitForm(td.matchers.anything())).thenResolve('doc');
+  const submitFormExplanation = td.explain(api.submitForm);
+
+  t.is(await api.cancelReservation(), 'doc');
+  t.is(submitFormExplanation.calls.length, 1);
+  t.deepEqual(submitFormExplanation.calls[0].args, [{
+    EventNo: CONST.EVENT_IDS.CANCEL_RESERVATION,
+    UserID: CONST.UserID,
+    MemberID: 'Kota'
   }]);
 });
