@@ -230,7 +230,6 @@ BikeShareApi.prototype.listBikes = function(parkingId) {
     ParkingEntID: CONST.ParkingEntID,
     ParkingID: parkingId,
     EventNo: CONST.EVENT_IDS.BIKES,
-    SessionID: this.SessionID,
     MemberID: this.MemberID,
     UserID: CONST.UserID,
     GetInfoNum: '20',
@@ -240,10 +239,10 @@ BikeShareApi.prototype.listBikes = function(parkingId) {
   };
   console.log('Try to get bike list for parkingId: ' + parkingId);
   return this.submitForm(form)
-    .then(parseBikesData);
+    .then(doc => this.parseBikesData(doc));
 };
 
-function parseBikesData(body) {
+BikeShareApi.prototype.parseBikesData = function(body) {
   // TODO remove duplication
   const selector = 'div.main_inner_wide_box form[name^="tab_"]';
   const forms = body.querySelectorAll(selector);

@@ -88,6 +88,31 @@ test('List ports successfully', async t => {
   }])
 });
 
+test('List bikes successfully', async t => {
+  const CONST = t.context.CONST;
+  const api = new BikeShareApi('Kota', 'dummy-password');
+  td.replace(api, 'submitForm');
+  td.when(api.submitForm(td.matchers.anything())).thenResolve('doc');
+  const submitFormExplanation = td.explain(api.submitForm);
+
+  td.replace(api, 'parseBikesData');
+  td.when(api.parseBikesData(td.matchers.anything())).thenResolve('bikes');
+
+  t.is(await api.listBikes('parkingId1'), 'bikes');
+  t.is(submitFormExplanation.calls.length, 1);
+  t.deepEqual(submitFormExplanation.calls[0].args, [{
+    ParkingEntID: CONST.ParkingEntID,
+    ParkingID: 'parkingId1',
+    EventNo: CONST.EVENT_IDS.BIKES,
+    MemberID: 'Kota',
+    UserID: CONST.UserID,
+    GetInfoNum: '20',
+    GetInfoTopNum: '1',
+    ParkingLat: '',
+    ParkingLon: ''
+  }])
+});
+
 test('listSpecifiedPorts', async t => {
   function toPort(i) {
     return { ParkingID: i.toString() };
@@ -160,9 +185,9 @@ test('Parse bikes', async t => {
 
   const portsHtml = fs.readFileSync('test/html/bikes.html', 'utf8');
   const doc = new JSDOM(portsHtml).window.document;
-  const parseBikesData = BikeShareApi.__get__('parseBikesData');
+  const api = new BikeShareApi('Kota', 'dummy-password');
 
-  const bikes = await parseBikesData(doc);
+  const bikes = await api.parseBikesData(doc);
   t.is(bikes.length, 2);
   t.deepEqual(bikes[0], {
     CycleID: 'CycleID1',
