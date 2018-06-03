@@ -323,7 +323,6 @@ BikeShareApi.prototype.parseReservationResult = function(doc) {
 BikeShareApi.prototype.cancelReservation = function() {
   const form = {
     EventNo: CONST.EVENT_IDS.CANCEL_RESERVATION,
-    SessionID: this.SessionID,
     UserID: CONST.UserID,
     MemberID: this.MemberID
   };

@@ -409,3 +409,19 @@ test('Make reservation successfully.', async t => {
       CycleEntID: 'CycleEntID1'
   }]);
 });
+
+test('Cancel reservation successfully.', async t => {
+  const CONST = t.context.CONST;
+  const api = new BikeShareApi('Kota', 'dummy-password');
+  td.replace(api, 'submitForm');
+  td.when(api.submitForm(td.matchers.anything())).thenResolve('doc');
+  const submitFormExplanation = td.explain(api.submitForm);
+
+  t.is(await api.cancelReservation(), 'doc');
+  t.is(submitFormExplanation.calls.length, 1);
+  t.deepEqual(submitFormExplanation.calls[0].args, [{
+    EventNo: CONST.EVENT_IDS.CANCEL_RESERVATION,
+    UserID: CONST.UserID,
+    MemberID: 'Kota'
+  }]);
+});
