@@ -45,6 +45,22 @@ test('isPasswordNotChangedLongTimeError', t => {
     t.false(isPasswordNotChangedLongTimeError('other text'));
 });
 
+test('Check error text when no errors', async t => {
+  const checkErrorText = BikeShareApi.__get__('checkErrorText');
+  const parseDom = BikeShareApi.__get__('parseDom');
+
+  const doc = await parseDom('<div id="foo"></div>');
+  t.is(await checkErrorText(doc), doc);
+});
+
+test('Check error text when some errors', async t => {
+  const checkErrorText = BikeShareApi.__get__('checkErrorText');
+  const parseDom = BikeShareApi.__get__('parseDom');
+
+  const doc = await parseDom('<div id="foo"><div class="err_text">You got error</div></div>');
+  t.is(await checkErrorText(doc).catch(e => e), 'You got error');
+});
+
 test('listSpecifiedPorts', async t => {
   function toPort(i) {
     return { ParkingID: i.toString() };
